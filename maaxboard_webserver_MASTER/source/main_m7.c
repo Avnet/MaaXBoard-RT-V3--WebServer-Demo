@@ -617,8 +617,8 @@ static void main_task(void *arg)
 
 //    result = get_saved_wifi_credentials(CONNECTION_INFO_FILENAME, ssid, password);
 
-    strcpy(ssid, "Home-2.4G");
-    strcpy(password, "ulaanbaatarchuud");
+    strcpy(ssid, "NETGEAR12");
+    strcpy(password, "aquaticpotato000");
     result = 0;
 
 

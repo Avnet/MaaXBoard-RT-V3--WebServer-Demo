@@ -25,11 +25,13 @@
 #include "webconfig.h"
 #include "cred_flash_storage.h"
 
+#include "cJSON.h"
 /*******************************************************************************
  * Prototypes
  ******************************************************************************/
-
+static int cgi_led(HTTPSRV_CGI_REQ_STRUCT *param);
 static int CGI_HandleGet(HTTPSRV_CGI_REQ_STRUCT *param);
+static int CGI_HandleGetSensor(HTTPSRV_CGI_REQ_STRUCT *param);
 static int CGI_HandlePost(HTTPSRV_CGI_REQ_STRUCT *param);
 static int CGI_HandleReset(HTTPSRV_CGI_REQ_STRUCT *param);
 static int CGI_HandleStatus(HTTPSRV_CGI_REQ_STRUCT *param);
@@ -54,7 +56,7 @@ struct board_state_variables
     char ssid[WPL_WIFI_SSID_LENGTH];
     char password[WPL_WIFI_PASSWORD_LENGTH];
     bool connected;
-    TaskHandle_t mainTask;
+    TaskHandle_t wifiTask;
 };
 
 /*******************************************************************************
@@ -63,8 +65,10 @@ struct board_state_variables
 
 
 const HTTPSRV_CGI_LINK_STRUCT cgi_lnk_tbl[] = {
+	{"led", cgi_led},
     {"reset", CGI_HandleReset},
     {"get", CGI_HandleGet},
+	{"imu", CGI_HandleGetSensor},
     {"post", CGI_HandlePost},
     {"status", CGI_HandleStatus},
     {0, 0} // DO NOT REMOVE - last item - end of table
@@ -75,6 +79,284 @@ struct board_state_variables g_BoardState;
 /*******************************************************************************
  * Code
  ******************************************************************************/
+struct _wsclient
+{
+	uint32_t handleId;
+	struct _wsclient *next;
+};
+
+static struct _wsclient *wsClients = NULL;
+static int16_t fxos_pitch;
+static int16_t fxos_roll;
+static int16_t fxos_yaw;
+
+
+enum USER_LED
+{
+	RED = 0,
+	GREEN = 1,
+	BLUE = 2
+};
+
+typedef struct{
+	GPIO_Type *base;
+	uint32_t pin;
+}led_struct;
+
+led_struct led_map[3] =
+{
+	{BOARD_USER_LED_RED_GPIO, BOARD_USER_LED_RED_GPIO_PIN},
+	{BOARD_USER_LED_GREEN_GPIO, BOARD_USER_LED_GREEN_GPIO_PIN},
+	{BOARD_USER_LED_BLUE_GPIO, BOARD_USER_LED_BLUE_GPIO_PIN}
+};
+
+static uint32_t get_user_led(enum USER_LED _usr_led)
+{
+	return GPIO_PinRead(led_map[_usr_led].base, led_map[_usr_led].pin);
+}
+
+static void set_user_led(enum USER_LED _usr_led, uint8_t state)
+{
+	GPIO_PinWrite(led_map[_usr_led].base, led_map[_usr_led].pin, state);
+}
+
+static bool check_cmd_json(cJSON *json_obj, char *cmd)
+{
+	cJSON *jsonItem = NULL;
+	if (json_obj != NULL)
+	{
+		jsonItem = cJSON_GetObjectItem(json_obj, "cmdType");
+		if (jsonItem->type == cJSON_String && (jsonItem->valuestring != NULL))
+		{
+			if (strcmp(jsonItem->valuestring, cmd)==0)
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+static int32_t get_intVal_json(cJSON *json_obj, char *field)
+{
+	cJSON *jsonItem = NULL;
+	if (json_obj != NULL)
+	{
+		jsonItem = cJSON_GetObjectItem(json_obj, field);
+		if (jsonItem->type == cJSON_Number)
+		{
+			return jsonItem->valueint;
+		}
+	}
+	return -1;
+}
+
+/* LED Common Gateway Interface callback. */
+static int cgi_led(HTTPSRV_CGI_REQ_STRUCT *param)
+{
+	HTTPSRV_CGI_RES_STRUCT response = {0};
+
+	response.ses_handle  = param->ses_handle;
+	response.status_code = HTTPSRV_CODE_OK;
+	char str[7];
+	int length = 0;
+	char * json_serialized;
+	if (param->request_method == HTTPSRV_REQ_GET)
+	{
+		cJSON *led = NULL;
+		cJSON *cmd = NULL;
+		cJSON *jsonObj = cJSON_CreateObject();
+		for (int i=0; i<3; i++)
+		{
+			length += sprintf(str+length, "%d", get_user_led(i));
+		}
+		str[length] = 0;
+
+		cmd = cJSON_CreateString("getLed");
+		cJSON_AddItemToObject(jsonObj, "cmdType", cmd);
+
+		led = cJSON_CreateString(str);
+		cJSON_AddItemToObject(jsonObj, "led", led);
+
+		json_serialized = cJSON_Print(jsonObj);
+		length = strlen(json_serialized);
+
+		response.content_type   = HTTPSRV_CONTENT_TYPE_PLAIN;
+		response.data           = json_serialized;
+		response.data_length    = length;
+		response.content_length = response.data_length;
+		HTTPSRV_cgi_write(&response);
+		cJSON_Delete(jsonObj);
+	}
+	else if (param->request_method == HTTPSRV_REQ_POST)
+	{
+		uint32_t length = 0;
+		uint32_t read;
+		char buffer[100] = {0};
+		int32_t led_num = -1;
+		int32_t led_state = 0;
+		length = param->content_length;
+		read   = HTTPSRV_cgi_read(param->ses_handle, buffer, (length > sizeof(buffer)) ? sizeof(buffer) : length);
+
+		if (read > 0)
+		{
+			cJSON *led_json = cJSON_Parse(buffer);
+
+			if (check_cmd_json(led_json, "setLed"))
+			{
+				led_num = get_intVal_json(led_json, "ledNum");
+				led_state = get_intVal_json(led_json, "ledState");
+
+			}
+			if (led_json != NULL)
+			{
+				cJSON_Delete(led_json);
+			}
+		}
+
+		if (led_num >=0 && led_num < 3)
+		{
+			set_user_led((uint8_t)led_num, (uint8_t)led_state);
+			length = snprintf(str, sizeof(str), "OK\n");
+		}
+		else
+		{
+			length = snprintf(str, sizeof(str), "FAIL\n");
+		}
+
+	    response.ses_handle   = param->ses_handle;
+	    response.content_type = HTTPSRV_CONTENT_TYPE_PLAIN;
+	    response.status_code  = HTTPSRV_CODE_OK;
+	    /*
+	    ** When the keep-alive is used we have to calculate a correct content length
+	    ** so the receiver knows when to ACK the data and continue with a next request.
+	    ** Please see RFC2616 section 4.4 for further details.
+	    */
+
+	    /* Calculate content length while saving it to buffer */
+
+	    response.data           = str;
+	    response.data_length    = length;
+	    response.content_length = response.data_length;
+	    /* Send response */
+	    HTTPSRV_cgi_write(&response);
+	}
+
+	return (response.content_length);
+}
+
+
+static void add_node(uint32_t handleId)
+{
+	struct _wsclient *currClient = wsClients;
+	if (currClient==NULL)
+	{
+		currClient = pvPortMalloc(sizeof(struct _wsclient));
+		currClient->handleId = handleId;
+		currClient->next = NULL;
+		wsClients = currClient;
+	}
+	else
+	{
+		while(currClient->next !=NULL)
+		{
+			currClient = currClient->next;
+		}
+		currClient->next = pvPortMalloc(sizeof(struct _wsclient));
+		(currClient->next)->handleId = handleId;
+		currClient->next->next = NULL;
+	}
+}
+
+static int32_t delete_node(uint32_t handleId)
+{
+	struct _wsclient *currClient = wsClients;
+	struct _wsclient *prevClient = NULL;
+	if (currClient==NULL)
+	{
+		return -1;
+	}
+	else
+	{
+		while(currClient != NULL && currClient->handleId != handleId)
+		{
+			prevClient = currClient;
+			currClient = currClient->next;
+		}
+
+		if (currClient == NULL)
+		{
+			return -1;
+		}
+		else if (prevClient==NULL) /* first element */
+		{
+			wsClients = currClient->next;
+		}
+		else if (currClient != NULL)
+		{
+			prevClient->next = currClient->next;
+		}
+		vPortFree(currClient);
+		return 1;
+	}
+}
+
+#if HTTPSRV_CFG_WEBSOCKET_ENABLED
+/*
+ * Echo plugin code - simple plugin which echoes any message it receives back to
+ * client.
+ */
+uint32_t ws_echo_connect(void *param, WS_USER_CONTEXT_STRUCT context)
+{
+	//add_node(context.handle);
+#if DEBUG_WS
+    PRINTF("WebSocket echo client connected.\r\n");
+#endif
+    return (0);
+}
+
+uint32_t ws_echo_disconnect(void *param, WS_USER_CONTEXT_STRUCT context)
+{
+	//delete_node(context.handle);
+#if DEBUG_WS
+    PRINTF("WebSocket echo client disconnected.\r\n");
+#endif
+    return (0);
+}
+
+uint32_t ws_echo_message(void *param, WS_USER_CONTEXT_STRUCT context)
+{
+    WS_send(&context); /* Send back what was received.*/
+#if DEBUG_WS
+    if (context.data.type == WS_DATA_TEXT)
+    {
+        /* Print received text message to console. */
+        context.data.data_ptr[context.data.length] = 0;
+        PRINTF("WebSocket message received:\r\n%s\r\n", context.data.data_ptr);
+    }
+    else
+    {
+        /* Inform user about binary message. */
+        PRINTF("WebSocket binary data with length of %d bytes received.", context.data.length);
+    }
+#endif
+
+    return (0);
+}
+
+uint32_t ws_echo_error(void *param, WS_USER_CONTEXT_STRUCT context)
+{
+#if DEBUG_WS
+    PRINTF("WebSocket error: 0x%X.\r\n", context.error);
+#endif
+    return (0);
+}
+
+WS_PLUGIN_STRUCT ws_tbl[] = {{"/echo", ws_echo_connect, ws_echo_message, ws_echo_error, ws_echo_disconnect, NULL},
+                             {0, 0, 0, 0, 0, 0}};
+#endif /* HTTPSRV_CFG_WEBSOCKET_ENABLED */
+
+
 
 /*CGI*/
 /* Example Common Gateway Interface callback. */
@@ -124,6 +406,53 @@ static int CGI_HandleGet(HTTPSRV_CGI_REQ_STRUCT *param)
 
     return (response.content_length);
 }
+
+/*CGI*/
+/* Example Common Gateway Interface callback. */
+/* These callbacks are called from the session tasks according to the Link struct above */
+/* The get.cgi request triggers a scan and responds with a list of the SSIDs */
+static int CGI_HandleGetSensor(HTTPSRV_CGI_REQ_STRUCT *param)
+{
+    HTTPSRV_CGI_RES_STRUCT response = {0};
+
+    response.ses_handle  = param->ses_handle;
+    response.status_code = HTTPSRV_CODE_OK;
+    int length = 0;
+    char * json_serialized;
+    if (param->request_method == HTTPSRV_REQ_GET)
+    {
+    	cJSON *jsonObj = cJSON_CreateObject();
+		int sensors[3] = {0,0,0};
+		sensors[0] = fxos_pitch;
+		sensors[1] = fxos_roll;
+		sensors[2] = fxos_yaw;
+
+		cJSON *sensor = NULL;
+		cJSON *cmd = NULL;
+
+		if (param->request_method == HTTPSRV_REQ_GET)
+		{
+			sensor = cJSON_CreateIntArray(sensors,3);
+		}
+
+		cmd = cJSON_CreateString("imu");
+		cJSON_AddItemToObject(jsonObj, "cmdType", cmd);
+		cJSON_AddItemToObject(jsonObj, "sensor", sensor);
+		json_serialized = cJSON_Print(jsonObj);
+
+		length = strlen(json_serialized);
+
+		response.content_type   = HTTPSRV_CONTENT_TYPE_PLAIN;
+		response.data           = json_serialized;
+		response.data_length    = length;
+		response.content_length = response.data_length;
+		HTTPSRV_cgi_write(&response);
+		cJSON_Delete(jsonObj);
+    }
+    return (response.content_length);
+}
+
+
 
 /* The post.cgi request is used for triggering a connection to an external AP */
 static int CGI_HandlePost(HTTPSRV_CGI_REQ_STRUCT *param)
@@ -213,7 +542,7 @@ static int CGI_HandlePost(HTTPSRV_CGI_REQ_STRUCT *param)
         /* Resume the main task, this will make sure to clean up and shut down the AP*/
         /* Since g_BoardState.connected == true, the reconnection to AP will be skipped and
          * the main task will be put back to sleep waiting for a reset event */
-        vTaskResume(g_BoardState.mainTask);
+        vTaskResume(g_BoardState.wifiTask);
     }
 
     return (response.content_length);
@@ -257,7 +586,7 @@ static int CGI_HandleReset(HTTPSRV_CGI_REQ_STRUCT *param)
         g_BoardState.wifiState = WIFI_STATE_AP;
         g_BoardState.connected = false;
 
-        vTaskResume(g_BoardState.mainTask);
+        vTaskResume(g_BoardState.wifiTask);
     }
 
     return 0;
@@ -520,8 +849,79 @@ void SystemInitHook(void)
     (void)MCMGR_EarlyInit();
 }
 
+static void broadcast_wsclients(char * jsonString, uint32_t length)
+{
+	WS_USER_CONTEXT_STRUCT context;
+	context.data.data_ptr = jsonString;
+	context.data.length = length;
+	context.data.type = WS_DATA_TEXT;
+	context.error = WS_ERR_OK;
+	context.fin_flag = 1;
+	struct _wsclient *currClient = wsClients;
+	while(currClient!=NULL)
+	{
+		context.handle = currClient->handleId;
+		WS_send(&context);
+		currClient = currClient->next;
+	}
+}
+
+static void sensor_task(void *pvParameters)
+{
+	uint8_t arr[10] = {10, 25, 13, 100, 50, 64, 0, 150, 250, 100};
+	uint8_t index = 0;
+	char * json_serialized;
+	uint32_t length = 0;
+	while(1)
+	{
+		vTaskDelay(1000/portTICK_PERIOD_MS);
+		if (index>=10)
+		{
+			index=0;
+		}
+		cJSON *jsonObj = cJSON_CreateObject();
+		cJSON *sensor = NULL;
+		cJSON *cmd = NULL;
+
+		cmd = cJSON_CreateString("bcSensor");
+		cJSON_AddItemToObject(jsonObj, "cmdType", cmd);
+
+		sensor = cJSON_CreateNumber(arr[index++]);
+		cJSON_AddItemToObject(jsonObj, "sensor", sensor);
+
+		json_serialized = cJSON_Print(jsonObj);
+		length = strlen(json_serialized);
+
+		broadcast_wsclients(json_serialized, length);
+
+		cJSON_Delete(jsonObj);
+	}
+	vTaskSuspend(NULL);
+}
+
+typedef struct imu_t {
+	uint8_t data_type;
+	int16_t yaw_t;
+	int16_t roll_t;
+	int16_t pitch_t;
+} imu_t;
+
+typedef struct lightranger_t {
+	uint8_t data_type;
+	int16_t distance;
+}lightranger_t;
+
+//union Sensor_data {
+//	imu_t fxos;
+//	lightranger_t light_distance;
+//};
+
+
 static void app_task(void *param)
 {
+	lightranger_t * light_ptr;
+	imu_t * imu_ptr;
+
     size_t xReceivedBytes;
     (void)memset((void *)(char *)APP_SH_MEM_BASE, 0, SH_MEM_TOTAL_SIZE);
     /* Create the Primary-To-Secondary message buffer, statically allocated at a known location
@@ -580,7 +980,15 @@ static void app_task(void *param)
             xMessageBufferReceive(xSecondaryToPrimaryMessageBuffer, (void *)&sensor_data[0], APP_MESSAGE_BUFFER_SIZE, portMAX_DELAY);
 
         (void)PRINTF("Primary core received a msg\r\n");
-        (void)PRINTF("Message: Size=%x, DATA = %s\r\n", xReceivedBytes, sensor_data);
+        if (sensor_data[0] == 0x01)
+        {
+        	// imu sensor
+        	imu_ptr = &sensor_data[0];
+        	fxos_pitch = imu_ptr->pitch_t;
+        	fxos_roll = imu_ptr->roll_t;
+        	fxos_yaw = imu_ptr->yaw_t;
+        	(void)PRINTF("Message: Size=%x, DATA = %d, %d, %d\r\n", xReceivedBytes, fxos_pitch, fxos_roll, fxos_yaw);
+        }
     }
 
     vMessageBufferDelete(xPrimaryToSecondaryMessageBuffer);
@@ -595,7 +1003,7 @@ static void app_task(void *param)
 /*!
  * @brief The main task function
  */
-static void main_task(void *arg)
+static void wifi_task(void *arg)
 {
     uint32_t result = 1;
 
@@ -827,6 +1235,7 @@ static uint32_t CleanUpClient()
  */
 int main(void)
 {
+	BaseType_t stat;
     /* Initialize standard SDK demo application pins */
     BOARD_ConfigMPU();
     BOARD_InitPins();
@@ -854,19 +1263,12 @@ int main(void)
     (void)PRINTF("\r\nFreeRTOS Message Buffers demo starts\r\n");
 
     //xTaskCreateStatic(app_task, "APP_TASK", APP_TASK_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1U, xStack, &xTaskBuffer);
-    if (xTaskCreate(app_task, "APP_TASK", 2048, NULL, configMAX_PRIORITIES - 4, NULL) != pdPASS)
-	{
-		PRINTF("[!] APP Task creation failed!\r\n");
-		while (1)
-			;
-	}
+    stat = xTaskCreate(app_task, "APP_TASK", 2048, NULL, configMAX_PRIORITIES - 4, NULL);
+    assert(pdPASS == stat);
 
-    if (xTaskCreate(main_task, "main_task", 2048, NULL, configMAX_PRIORITIES - 4, &g_BoardState.mainTask) != pdPASS)
-    {
-        PRINTF("[!] MAIN Task creation failed!\r\n");
-        while (1)
-            ;
-    }
+    stat = xTaskCreate(wifi_task, "wifi_task", 2048, NULL, configMAX_PRIORITIES - 4, &g_BoardState.wifiTask);
+    assert(pdPASS == stat);
+
     vTaskStartScheduler();
 
     (void)PRINTF("Failed to start FreeRTOS on core0.\r\n");

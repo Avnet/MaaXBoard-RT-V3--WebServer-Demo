@@ -32,13 +32,13 @@
 #define HTTPD_DEBUG LWIP_DBG_ON
 #endif
 #ifndef HTTPD_STACKSIZE
-#define HTTPD_STACKSIZE 512
+#define HTTPD_STACKSIZE 3000
 #endif
 #ifndef HTTPD_PRIORITY
 #define HTTPD_PRIORITY DEFAULT_THREAD_PRIO
 #endif
 #ifndef DEBUG_WS
-#define DEBUG_WS 0
+#define DEBUG_WS 1
 #endif
 
 #define CGI_BUFFER_LENGTH        (2048)

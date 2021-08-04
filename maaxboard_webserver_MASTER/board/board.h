@@ -65,11 +65,27 @@
 /*! @brief The USER_LED used for board */
 #define LOGIC_LED_ON  (0U)
 #define LOGIC_LED_OFF (1U)
-#ifndef BOARD_USER_LED_GPIO
-#define BOARD_USER_LED_GPIO GPIO9
+
+#ifndef BOARD_USER_LED_GREEN_GPIO
+#define BOARD_USER_LED_GREEN_GPIO GPIO8        //MaaXBoard Rev.1 and Rev.2
 #endif
-#ifndef BOARD_USER_LED_GPIO_PIN
-#define BOARD_USER_LED_GPIO_PIN (3U)
+#ifndef BOARD_USER_LED_GREEN_GPIO_PIN
+#define BOARD_USER_LED_GREEN_GPIO_PIN (28U)    //MaaXBoard Rev.1 and Rev.2
+#endif
+
+/*! @brief USER_RED RGB LED on MaaXBoard RT is on GPIO9_IO07 */
+#ifndef BOARD_USER_LED_RED_GPIO
+#define BOARD_USER_LED_RED_GPIO GPIO9        //MaaXBoard Rev.2
+#endif
+#ifndef BOARD_USER_LED_RED_GPIO_PIN
+#define BOARD_USER_LED_RED_GPIO_PIN (7U)     //MaaXBoard Rev.2
+#endif
+
+#ifndef BOARD_USER_LED_BLUE_GPIO
+#define BOARD_USER_LED_BLUE_GPIO GPIO9        //MaaXBoard Rev.2
+#endif
+#ifndef BOARD_USER_LED_BLUE_GPIO_PIN
+#define BOARD_USER_LED_BLUE_GPIO_PIN (9U)     //MaaXBoard Rev.2
 #endif
 
 #define USER_LED_INIT(output)                                            \

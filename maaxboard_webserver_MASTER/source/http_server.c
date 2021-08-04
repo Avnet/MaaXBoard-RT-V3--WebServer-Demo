@@ -15,7 +15,7 @@
 /* FS data.*/
 extern const HTTPSRV_FS_DIR_ENTRY httpsrv_fs_data[];
 extern const HTTPSRV_CGI_LINK_STRUCT cgi_lnk_tbl[];
-
+extern const WS_PLUGIN_STRUCT ws_tbl[];
 bool cgi_get_varval(char *src, char *var_name, char *dst, uint32_t length)
 {
     char *name;
@@ -103,7 +103,9 @@ void http_srv_task(void *arg)
     params.root_dir    = "";
     params.index_page  = "/index.html";
     params.cgi_lnk_tbl = cgi_lnk_tbl;
-
+#if HTTPSRV_CFG_WEBSOCKET_ENABLED
+    params.ws_tbl = ws_tbl;
+#endif
     /* Init HTTP Server.*/
     httpsrv_handle = HTTPSRV_init(&params);
     if (httpsrv_handle == 0)

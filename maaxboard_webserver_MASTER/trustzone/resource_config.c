@@ -139,9 +139,9 @@ tee:
     - mrcs:
       - mrc:
         - checker_id: 'MRC'
-        - slaves: [{id: SRAM_OC_cm7, base_region: {start: '0x00000000', size: '0x00002000'}, enabled: 'false', locked: unlock, index: '0', domains: [{template: NO_ACCESS}]},
-          {id: SRAM_OC_cm4, base_region: {start: '0x00000000', size: '0x00004000'}, enabled: 'false', locked: unlock, index: '0', domains: [{template: NO_ACCESS}]},
+        - slaves: [{id: SRAM_OC_cm4, base_region: {start: '0x00000000', size: '0x00004000'}, enabled: 'false', locked: unlock, index: '0', domains: [{template: NO_ACCESS}]},
           {id: SRAM_OC_ECC1, base_region: {start: '0x00000000', size: '0x00001000'}, enabled: 'false', locked: unlock, index: '0', domains: [{template: NO_ACCESS}]},
+          {id: SRAM_OC_cm7, base_region: {start: '0x00000000', size: '0x00002000'}, enabled: 'false', locked: unlock, index: '0', domains: [{template: NO_ACCESS}]},
           {id: SRAM_OC_ECC2, base_region: {start: '0x00000000', size: '0x00001000'}, enabled: 'false', locked: unlock, index: '0', domains: [{template: NO_ACCESS}]},
           {id: CAAM, base_region: {start: '0x00000000', size: '0x00001000'}, enabled: 'false', locked: unlock, index: '0', domains: [{template: NO_ACCESS}]}, {id: SEMC,
             base_region: {start: '0x00000000', size: '0x06000000'}, enabled: 'false', locked: unlock, index: '0', domains: [{template: NO_ACCESS}]}, {id: FLEXSPI1_REGION,
@@ -261,9 +261,9 @@ tee:
     - mrcs:
       - mrc:
         - checker_id: 'MRC_XRDC'
-        - slaves: [{id: SRAM_OC_cm7, base_region: {start: '0x00000000', size: '0x00002000'}, enabled: 'false', locked: unlock, index: '0', domains: [{template: NO_ACCESS}]},
-          {id: SRAM_OC_cm4, base_region: {start: '0x00000000', size: '0x00004000'}, enabled: 'false', locked: unlock, index: '0', domains: [{template: NO_ACCESS}]},
+        - slaves: [{id: SRAM_OC_cm4, base_region: {start: '0x00000000', size: '0x00004000'}, enabled: 'false', locked: unlock, index: '0', domains: [{template: NO_ACCESS}]},
           {id: SRAM_OC_ECC1, base_region: {start: '0x00000000', size: '0x00001000'}, enabled: 'false', locked: unlock, index: '0', domains: [{template: NO_ACCESS}]},
+          {id: SRAM_OC_cm7, base_region: {start: '0x00000000', size: '0x00002000'}, enabled: 'false', locked: unlock, index: '0', domains: [{template: NO_ACCESS}]},
           {id: SRAM_OC_ECC2, base_region: {start: '0x00000000', size: '0x00001000'}, enabled: 'false', locked: unlock, index: '0', domains: [{template: NO_ACCESS}]},
           {id: CAAM, base_region: {start: '0x00000000', size: '0x00001000'}, enabled: 'false', locked: unlock, index: '0', domains: [{template: NO_ACCESS}]}, {id: SEMC,
             base_region: {start: '0x00000000', size: '0x06000000'}, enabled: 'false', locked: unlock, index: '0', domains: [{template: NO_ACCESS}]}, {id: FLEXSPI1_REGION,
@@ -365,17 +365,17 @@ tee:
   - mrcs:
     - mrc:
       - checker_id: 'MRC_RDC'
-      - slaves: [{id: SRAM_OC1, base_region: {start: '0x00000000', size: '0x00000080'}, enabled: 'false', locked: 'false', index: '0', domains: [{template: rw},
-            {template: rw}]}, {id: SRAM_OC2, base_region: {start: '0x00000000', size: '0x00000080'}, enabled: 'false', locked: 'false', index: '0', domains: [{template: rw},
-            {template: rw}]}, {id: SRAM_OC_cm4, base_region: {start: '0x00000000', size: '0x00000080'}, enabled: 'false', locked: 'false', index: '0', domains: [
-            {template: rw}, {template: rw}]}, {id: SRAM_OC_cm7, base_region: {start: '0x00000000', size: '0x00000080'}, enabled: 'false', locked: 'false', index: '0',
+      - slaves: [{id: SRAM_OC_cm4, base_region: {start: '0x00000000', size: '0x00000080'}, enabled: 'false', locked: 'false', index: '0', domains: [{template: rw},
+            {template: rw}]}, {id: SIM_DISP, base_region: {start: '0x00000000', size: '0x00100000'}, enabled: 'false', locked: 'false', index: '0', domains: [{template: rw},
+            {template: rw}]}, {id: SRAM_OC_cm7, base_region: {start: '0x00000000', size: '0x00000080'}, enabled: 'false', locked: 'false', index: '0', domains: [
+            {template: rw}, {template: rw}]}, {id: SIM_M4, base_region: {start: '0x00000000', size: '0x00100000'}, enabled: 'false', locked: 'false', index: '0',
           domains: [{template: rw}, {template: rw}]}, {id: CAAM, base_region: {start: '0x00000000', size: '0x00002000'}, enabled: 'false', locked: 'false', index: '0',
+          domains: [{template: rw}, {template: rw}]}, {id: SIM_M7, base_region: {start: '0x00000000', size: '0x00100000'}, enabled: 'false', locked: 'false', index: '0',
+          domains: [{template: rw}, {template: rw}]}, {id: SRAM_OC1, base_region: {start: '0x00000000', size: '0x00000080'}, enabled: 'false', locked: 'false', index: '0',
+          domains: [{template: rw}, {template: rw}]}, {id: SRAM_OC2, base_region: {start: '0x00000000', size: '0x00000080'}, enabled: 'false', locked: 'false', index: '0',
           domains: [{template: rw}, {template: rw}]}, {id: SEMC, base_region: {start: '0x00000000', size: '0x00001000'}, enabled: 'false', locked: 'false', index: '0',
           domains: [{template: rw}, {template: rw}]}, {id: FLEXSPI1_REGION, base_region: {start: '0x00000000', size: '0x00001000'}, enabled: 'false', locked: 'false',
           index: '0', domains: [{template: rw}, {template: rw}]}, {id: FLEXSPI2_REGION, base_region: {start: '0x00000000', size: '0x00001000'}, enabled: 'false',
-          locked: 'false', index: '0', domains: [{template: rw}, {template: rw}]}, {id: SIM_DISP, base_region: {start: '0x00000000', size: '0x00100000'}, enabled: 'false',
-          locked: 'false', index: '0', domains: [{template: rw}, {template: rw}]}, {id: SIM_M4, base_region: {start: '0x00000000', size: '0x00100000'}, enabled: 'false',
-          locked: 'false', index: '0', domains: [{template: rw}, {template: rw}]}, {id: SIM_M7, base_region: {start: '0x00000000', size: '0x00100000'}, enabled: 'false',
           locked: 'false', index: '0', domains: [{template: rw}, {template: rw}]}]
 - global_options:
   - no:
@@ -482,21 +482,30 @@ void BOARD_InitRDC()
     
     /* ### RDC Configuration of Memory Regions and Peripherals Domain Access Permissions ### */
     
+    RDC->MR[44].MRSA = 0x20200000U;
+    RDC->MR[44].MREA = 0x20200080U;
+    RDC->MR[44].MRC = 0x000000FFU;
+    RDC->MR[56].MRSA = 0x41000000U;
+    RDC->MR[56].MREA = 0x41100000U;
+    RDC->MR[56].MRC = 0x000000FFU;
+    RDC->MR[40].MRSA = 0x20360000U;
+    RDC->MR[40].MREA = 0x20360080U;
+    RDC->MR[40].MRC = 0x000000FFU;
+    RDC->MR[57].MRSA = 0x41100000U;
+    RDC->MR[57].MREA = 0x41200000U;
+    RDC->MR[57].MRC = 0x000000FFU;
+    RDC->MR[48].MRSA = 0x00280000U;
+    RDC->MR[48].MREA = 0x00282000U;
+    RDC->MR[48].MRC = 0x000000FFU;
+    RDC->MR[58].MRSA = 0x41400000U;
+    RDC->MR[58].MREA = 0x41500000U;
+    RDC->MR[58].MRC = 0x000000FFU;
     RDC->MR[24].MRSA = 0x20240000U;
     RDC->MR[24].MREA = 0x20240080U;
     RDC->MR[24].MRC = 0x000000FFU;
     RDC->MR[32].MRSA = 0x202C0000U;
     RDC->MR[32].MREA = 0x202C0080U;
     RDC->MR[32].MRC = 0x000000FFU;
-    RDC->MR[44].MRSA = 0x20200000U;
-    RDC->MR[44].MREA = 0x20200080U;
-    RDC->MR[44].MRC = 0x000000FFU;
-    RDC->MR[40].MRSA = 0x20360000U;
-    RDC->MR[40].MREA = 0x20360080U;
-    RDC->MR[40].MRC = 0x000000FFU;
-    RDC->MR[48].MRSA = 0x00280000U;
-    RDC->MR[48].MREA = 0x00282000U;
-    RDC->MR[48].MRC = 0x000000FFU;
     RDC->MR[0].MRSA = 0x80000000U;
     RDC->MR[0].MREA = 0x80001000U;
     RDC->MR[0].MRC = 0x000000FFU;
@@ -506,15 +515,6 @@ void BOARD_InitRDC()
     RDC->MR[16].MRSA = 0x60000000U;
     RDC->MR[16].MREA = 0x60001000U;
     RDC->MR[16].MRC = 0x000000FFU;
-    RDC->MR[56].MRSA = 0x41000000U;
-    RDC->MR[56].MREA = 0x41100000U;
-    RDC->MR[56].MRC = 0x000000FFU;
-    RDC->MR[57].MRSA = 0x41100000U;
-    RDC->MR[57].MREA = 0x41200000U;
-    RDC->MR[57].MRC = 0x000000FFU;
-    RDC->MR[58].MRSA = 0x41400000U;
-    RDC->MR[58].MREA = 0x41500000U;
-    RDC->MR[58].MRC = 0x000000FFU;
     
     RDC->PDAP[1] = 0x0000000FU;
     RDC->PDAP[2] = 0x0000000FU;
@@ -991,12 +991,6 @@ void BOARD_InitXRDC2()
     XRDC2_D0->PACI_PDACJ[5][0].PAC_PDAC_W1 = 0;
     XRDC2_D0->PACI_PDACJ[5][0].PAC_PDAC_W0 = 0;
     
-    XRDC2_D0->MRCI_MRGDJ[4][0].MRC_MRGD_W6 = 0;
-    XRDC2_D0->MRCI_MRGDJ[4][0].MRC_MRGD_W0 = 0x20360000U;
-    XRDC2_D0->MRCI_MRGDJ[4][0].MRC_MRGD_W1 = 0;
-    XRDC2_D0->MRCI_MRGDJ[4][0].MRC_MRGD_W2 = 0x20361FFFU;
-    XRDC2_D0->MRCI_MRGDJ[4][0].MRC_MRGD_W3 = 0;
-    XRDC2_D0->MRCI_MRGDJ[4][0].MRC_MRGD_W5 = 0;
     XRDC2_D0->MRCI_MRGDJ[3][0].MRC_MRGD_W6 = 0;
     XRDC2_D0->MRCI_MRGDJ[3][0].MRC_MRGD_W0 = 0x20200000U;
     XRDC2_D0->MRCI_MRGDJ[3][0].MRC_MRGD_W1 = 0;
@@ -1009,6 +1003,12 @@ void BOARD_InitXRDC2()
     XRDC2_D0->MRCI_MRGDJ[5][0].MRC_MRGD_W2 = 0x20340FFFU;
     XRDC2_D0->MRCI_MRGDJ[5][0].MRC_MRGD_W3 = 0;
     XRDC2_D0->MRCI_MRGDJ[5][0].MRC_MRGD_W5 = 0;
+    XRDC2_D0->MRCI_MRGDJ[4][0].MRC_MRGD_W6 = 0;
+    XRDC2_D0->MRCI_MRGDJ[4][0].MRC_MRGD_W0 = 0x20360000U;
+    XRDC2_D0->MRCI_MRGDJ[4][0].MRC_MRGD_W1 = 0;
+    XRDC2_D0->MRCI_MRGDJ[4][0].MRC_MRGD_W2 = 0x20361FFFU;
+    XRDC2_D0->MRCI_MRGDJ[4][0].MRC_MRGD_W3 = 0;
+    XRDC2_D0->MRCI_MRGDJ[4][0].MRC_MRGD_W5 = 0;
     XRDC2_D0->MRCI_MRGDJ[6][0].MRC_MRGD_W6 = 0;
     XRDC2_D0->MRCI_MRGDJ[6][0].MRC_MRGD_W0 = 0x20350000U;
     XRDC2_D0->MRCI_MRGDJ[6][0].MRC_MRGD_W1 = 0;
@@ -1400,12 +1400,6 @@ void BOARD_InitXRDC2()
     XRDC2_D1->MSCI_MSAC_WK[3].MSC_MSAC_W1 = 0;
     XRDC2_D1->MSCI_MSAC_WK[3].MSC_MSAC_W0 = 0;
     
-    XRDC2_D1->MRCI_MRGDJ[4][0].MRC_MRGD_W6 = 0;
-    XRDC2_D1->MRCI_MRGDJ[4][0].MRC_MRGD_W0 = 0x20360000U;
-    XRDC2_D1->MRCI_MRGDJ[4][0].MRC_MRGD_W1 = 0;
-    XRDC2_D1->MRCI_MRGDJ[4][0].MRC_MRGD_W2 = 0x20361FFFU;
-    XRDC2_D1->MRCI_MRGDJ[4][0].MRC_MRGD_W3 = 0;
-    XRDC2_D1->MRCI_MRGDJ[4][0].MRC_MRGD_W5 = 0;
     XRDC2_D1->MRCI_MRGDJ[3][0].MRC_MRGD_W6 = 0;
     XRDC2_D1->MRCI_MRGDJ[3][0].MRC_MRGD_W0 = 0x20200000U;
     XRDC2_D1->MRCI_MRGDJ[3][0].MRC_MRGD_W1 = 0;
@@ -1418,6 +1412,12 @@ void BOARD_InitXRDC2()
     XRDC2_D1->MRCI_MRGDJ[5][0].MRC_MRGD_W2 = 0x20340FFFU;
     XRDC2_D1->MRCI_MRGDJ[5][0].MRC_MRGD_W3 = 0;
     XRDC2_D1->MRCI_MRGDJ[5][0].MRC_MRGD_W5 = 0;
+    XRDC2_D1->MRCI_MRGDJ[4][0].MRC_MRGD_W6 = 0;
+    XRDC2_D1->MRCI_MRGDJ[4][0].MRC_MRGD_W0 = 0x20360000U;
+    XRDC2_D1->MRCI_MRGDJ[4][0].MRC_MRGD_W1 = 0;
+    XRDC2_D1->MRCI_MRGDJ[4][0].MRC_MRGD_W2 = 0x20361FFFU;
+    XRDC2_D1->MRCI_MRGDJ[4][0].MRC_MRGD_W3 = 0;
+    XRDC2_D1->MRCI_MRGDJ[4][0].MRC_MRGD_W5 = 0;
     XRDC2_D1->MRCI_MRGDJ[6][0].MRC_MRGD_W6 = 0;
     XRDC2_D1->MRCI_MRGDJ[6][0].MRC_MRGD_W0 = 0x20350000U;
     XRDC2_D1->MRCI_MRGDJ[6][0].MRC_MRGD_W1 = 0;

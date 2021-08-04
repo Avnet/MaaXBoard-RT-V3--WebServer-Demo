@@ -91,6 +91,39 @@ void BOARD_InitBootPins(void);
 #define BOARD_INITPINS_ENET_MDC_SIGNAL                           gpio_mux_io_cm7   /*!< Signal name */
 #define BOARD_INITPINS_ENET_MDC_CHANNEL                                      31U   /*!< Signal channel */
 
+/* GPIO_AD_08 (coord R15), LED_RED */
+/* Routed pin properties */
+#define BOARD_INITPINS_USER_LED_RED_PERIPHERAL                             GPIO9   /*!< Peripheral name */
+#define BOARD_INITPINS_USER_LED_RED_SIGNAL                               gpio_io   /*!< Signal name */
+#define BOARD_INITPINS_USER_LED_RED_CHANNEL                                   7U   /*!< Signal channel */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_INITPINS_USER_LED_RED_GPIO                                   GPIO9   /*!< GPIO peripheral base pointer */
+#define BOARD_INITPINS_USER_LED_RED_GPIO_PIN                                  7U   /*!< GPIO pin number */
+#define BOARD_INITPINS_USER_LED_RED_GPIO_PIN_MASK                     (1U << 7U)   /*!< GPIO pin mask */
+
+/* GPIO_EMC_B2_18 (coord N3), LED_GREEN */
+/* Routed pin properties */
+#define BOARD_INITPINS_USER_LED_GREEN_PERIPHERAL                           GPIO8   /*!< Peripheral name */
+#define BOARD_INITPINS_USER_LED_GREEN_SIGNAL                             gpio_io   /*!< Signal name */
+#define BOARD_INITPINS_USER_LED_GREEN_CHANNEL                                28U   /*!< Signal channel */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_INITPINS_USER_LED_GREEN_GPIO                                 GPIO8   /*!< GPIO peripheral base pointer */
+#define BOARD_INITPINS_USER_LED_GREEN_GPIO_PIN                               28U   /*!< GPIO pin number */
+#define BOARD_INITPINS_USER_LED_GREEN_GPIO_PIN_MASK                  (1U << 28U)   /*!< GPIO pin mask */
+
+/* GPIO_AD_10 (coord R17), LED_BLUE */
+/* Routed pin properties */
+#define BOARD_INITPINS_USER_LED_BLUE_PERIPHERAL                            GPIO9   /*!< Peripheral name */
+#define BOARD_INITPINS_USER_LED_BLUE_SIGNAL                              gpio_io   /*!< Signal name */
+#define BOARD_INITPINS_USER_LED_BLUE_CHANNEL                                  9U   /*!< Signal channel */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_INITPINS_USER_LED_BLUE_GPIO                                  GPIO9   /*!< GPIO peripheral base pointer */
+#define BOARD_INITPINS_USER_LED_BLUE_GPIO_PIN                                 9U   /*!< GPIO pin number */
+#define BOARD_INITPINS_USER_LED_BLUE_GPIO_PIN_MASK                    (1U << 9U)   /*!< GPIO pin mask */
+
 /*!
  * @brief Configures pin routing and optionally pin electrical features.
  *

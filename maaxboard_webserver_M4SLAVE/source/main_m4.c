@@ -42,7 +42,7 @@ typedef struct the_message
 } THE_MESSAGE, *THE_MESSAGE_PTR;
 
 volatile THE_MESSAGE msg = {0};
-static volatile uint8_t sensor_data[30];
+//static volatile uint8_t sensor_data[30];
 
 #define SH_MEM_TOTAL_SIZE (6144U)
 #if defined(__ICCARM__) /* IAR Workbench */
@@ -328,8 +328,27 @@ static void Magnetometer_Calibrate(void)
     }
 }
 
+typedef struct imu_t {
+	uint8_t data_type;
+	int16_t yaw_t;
+	int16_t roll_t;
+	int16_t pitch_t;
+} imu_t;
+
+typedef struct lightranger_t {
+	uint8_t data_type;
+	int16_t distance;
+}lightranger_t;
+
+union Sensor_data {
+	imu_t fxos;
+	lightranger_t light_distance;
+};
+
+
 static void app_task(void *param)
 {
+	union Sensor_data sensor_data;
 	int32_t length = 0;
 	int size = 0;
     /* Create the Secondary-To-Primary message buffer, statically allocated at a known location
@@ -495,10 +514,14 @@ static void app_task(void *param)
 		}
 
 		g_Yaw_LP += (g_Yaw - g_Yaw_LP) * 0.01;
-
 		if (++loopCounter > 10)
 		{
-			length = sprintf((char *)sensor_data, "\r\nCompass Angle: %3.1lf", g_Yaw_LP);
+			sensor_data.fxos.data_type = 0x01;
+			sensor_data.fxos.pitch_t = (int16_t)(g_Pitch*10);
+			sensor_data.fxos.roll_t = (int16_t)(g_Roll*10);
+			sensor_data.fxos.yaw_t = (int16_t)(g_Yaw_LP*10);
+
+			//length = sprintf((char *)sensor_data, "\r\nCompass Angle: %3.1lf", g_Yaw_LP);
 			//length = sprintf((char *)sensor_data, "\r\nCompass Angle: %d", temp);
 //			temp++;
 //			if (temp == 100)
@@ -506,7 +529,7 @@ static void app_task(void *param)
 //				temp = 0;
 //			}
 			loopCounter = 0;
-			size = xMessageBufferSend(xSecondaryToPrimaryMessageBuffer, (void *)&sensor_data[0], (size_t)length, 0);
+			size = xMessageBufferSend(xSecondaryToPrimaryMessageBuffer, (void *)&sensor_data, (size_t)sizeof(sensor_data), 0);
 		}
 		vTaskDelay(10/portTICK_PERIOD_MS);
 	} /* End infinite loops */

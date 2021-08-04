@@ -12,11 +12,16 @@ package_id: MIMXRT1176DVMAA
 mcu_data: ksdk2_0
 processor_version: 9.0.2
 board: MIMXRT1170-EVK
+pin_labels:
+- {pin_num: N3, pin_signal: GPIO_EMC_B2_18, label: LED_GREEN, identifier: SEMC_DQS4;USER_LED_GREEN}
+- {pin_num: R15, pin_signal: GPIO_AD_08, label: LED_RED, identifier: USER_LED_RED}
+- {pin_num: R17, pin_signal: GPIO_AD_10, label: LED_BLUE, identifier: USER_LED_BLUE}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 
 #include "fsl_common.h"
 #include "fsl_iomuxc.h"
+#include "fsl_gpio.h"
 #include "pin_mux.h"
 
 /* FUNCTION ************************************************************************************************************
@@ -48,6 +53,9 @@ BOARD_InitPins:
   - {pin_num: A16, peripheral: USDHC1, signal: 'usdhc_data, 3', pin_signal: GPIO_SD_B1_05}
   - {pin_num: G17, peripheral: GPIO10, signal: 'gpio_io, 02', pin_signal: GPIO_AD_35}
   - {pin_num: K16, peripheral: CM7_GPIO3, signal: 'gpio_mux_io_cm7, 31', pin_signal: GPIO_AD_32}
+  - {pin_num: R15, peripheral: GPIO9, signal: 'gpio_io, 07', pin_signal: GPIO_AD_08, direction: OUTPUT}
+  - {pin_num: N3, peripheral: GPIO8, signal: 'gpio_io, 28', pin_signal: GPIO_EMC_B2_18, identifier: USER_LED_GREEN, direction: OUTPUT}
+  - {pin_num: R17, peripheral: GPIO9, signal: 'gpio_io, 09', pin_signal: GPIO_AD_10, direction: OUTPUT}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 
@@ -60,6 +68,39 @@ BOARD_InitPins:
 void BOARD_InitPins(void) {
   CLOCK_EnableClock(kCLOCK_Iomuxc);           /* LPCG on: LPCG is ON. */
 
+  /* GPIO configuration of USER_LED_GREEN on GPIO_EMC_B2_18 (pin N3) */
+  gpio_pin_config_t USER_LED_GREEN_config = {
+      .direction = kGPIO_DigitalOutput,
+      .outputLogic = 0U,
+      .interruptMode = kGPIO_NoIntmode
+  };
+  /* Initialize GPIO functionality on GPIO_EMC_B2_18 (pin N3) */
+  GPIO_PinInit(GPIO8, 28U, &USER_LED_GREEN_config);
+
+  /* GPIO configuration of USER_LED_RED on GPIO_AD_08 (pin R15) */
+  gpio_pin_config_t USER_LED_RED_config = {
+      .direction = kGPIO_DigitalOutput,
+      .outputLogic = 0U,
+      .interruptMode = kGPIO_NoIntmode
+  };
+  /* Initialize GPIO functionality on GPIO_AD_08 (pin R15) */
+  GPIO_PinInit(GPIO9, 7U, &USER_LED_RED_config);
+
+  /* GPIO configuration of USER_LED_BLUE on GPIO_AD_10 (pin R17) */
+  gpio_pin_config_t USER_LED_BLUE_config = {
+      .direction = kGPIO_DigitalOutput,
+      .outputLogic = 0U,
+      .interruptMode = kGPIO_NoIntmode
+  };
+  /* Initialize GPIO functionality on GPIO_AD_10 (pin R17) */
+  GPIO_PinInit(GPIO9, 9U, &USER_LED_BLUE_config);
+
+  IOMUXC_SetPinMux(
+      IOMUXC_GPIO_AD_08_GPIO9_IO07,           /* GPIO_AD_08 is configured as GPIO9_IO07 */
+      0U);                                    /* Software Input On Field: Input Path is determined by functionality */
+  IOMUXC_SetPinMux(
+      IOMUXC_GPIO_AD_10_GPIO9_IO09,           /* GPIO_AD_10 is configured as GPIO9_IO09 */
+      0U);                                    /* Software Input On Field: Input Path is determined by functionality */
   IOMUXC_SetPinMux(
       IOMUXC_GPIO_AD_24_LPUART1_TXD,          /* GPIO_AD_24 is configured as LPUART1_TXD */
       0U);                                    /* Software Input On Field: Input Path is determined by functionality */
@@ -74,6 +115,9 @@ void BOARD_InitPins(void) {
       0U);                                    /* Software Input On Field: Input Path is determined by functionality */
   IOMUXC_SetPinMux(
       IOMUXC_GPIO_AD_35_GPIO10_IO02,          /* GPIO_AD_35 is configured as GPIO10_IO02 */
+      0U);                                    /* Software Input On Field: Input Path is determined by functionality */
+  IOMUXC_SetPinMux(
+      IOMUXC_GPIO_EMC_B2_18_GPIO8_IO28,       /* GPIO_EMC_B2_18 is configured as GPIO8_IO28 */
       0U);                                    /* Software Input On Field: Input Path is determined by functionality */
   IOMUXC_SetPinMux(
       IOMUXC_GPIO_SD_B1_00_USDHC1_CMD,        /* GPIO_SD_B1_00 is configured as USDHC1_CMD */

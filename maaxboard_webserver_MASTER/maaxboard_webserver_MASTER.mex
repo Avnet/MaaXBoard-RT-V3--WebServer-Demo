@@ -25,6 +25,11 @@
          <pins_profile>
             <processor_version>9.0.2</processor_version>
             <power_domains/>
+            <pin_labels>
+               <pin_label pin_num="N3" pin_signal="GPIO_EMC_B2_18" label="LED_GREEN" identifier="SEMC_DQS4;USER_LED_GREEN"/>
+               <pin_label pin_num="R15" pin_signal="GPIO_AD_08" label="LED_RED" identifier="USER_LED_RED"/>
+               <pin_label pin_num="R17" pin_signal="GPIO_AD_10" label="LED_BLUE" identifier="USER_LED_BLUE"/>
+            </pin_labels>
          </pins_profile>
          <functions_list>
             <function name="BOARD_InitPins">
@@ -51,6 +56,11 @@
                      </feature>
                   </dependency>
                   <dependency resourceType="SWComponent" resourceId="platform.drivers.iomuxc" description="Pins initialization requires the IOMUXC Driver in the project." problem_level="2" source="Pins:BOARD_InitPins">
+                     <feature name="enabled" evaluation="equal" configuration="cm7">
+                        <data>true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="SWComponent" resourceId="platform.drivers.igpio" description="Pins initialization requires the IGPIO Driver in the project." problem_level="2" source="Pins:BOARD_InitPins">
                      <feature name="enabled" evaluation="equal" configuration="cm7">
                         <data>true</data>
                      </feature>
@@ -86,6 +96,22 @@
                   <pin peripheral="USDHC1" signal="usdhc_data, 3" pin_num="A16" pin_signal="GPIO_SD_B1_05"/>
                   <pin peripheral="GPIO10" signal="gpio_io, 02" pin_num="G17" pin_signal="GPIO_AD_35"/>
                   <pin peripheral="CM7_GPIO3" signal="gpio_mux_io_cm7, 31" pin_num="K16" pin_signal="GPIO_AD_32"/>
+                  <pin peripheral="GPIO9" signal="gpio_io, 07" pin_num="R15" pin_signal="GPIO_AD_08">
+                     <pin_features>
+                        <pin_feature name="direction" value="OUTPUT"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="GPIO8" signal="gpio_io, 28" pin_num="N3" pin_signal="GPIO_EMC_B2_18">
+                     <pin_features>
+                        <pin_feature name="identifier" value="USER_LED_GREEN"/>
+                        <pin_feature name="direction" value="OUTPUT"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="GPIO9" signal="gpio_io, 09" pin_num="R17" pin_signal="GPIO_AD_10">
+                     <pin_features>
+                        <pin_feature name="direction" value="OUTPUT"/>
+                     </pin_features>
+                  </pin>
                </pins>
             </function>
             <function name="BOARD_InitM2WifiResetPins">
@@ -1129,6 +1155,36 @@
             <mrcs>
                <mrc checker_id="MRC_RDC">
                   <slaves>
+                     <slave id="SRAM_OC_cm4" enabled="false" locked="false" index="0">
+                        <domain template="rw"/>
+                        <domain template="rw"/>
+                        <base_region start="0" size="128"/>
+                     </slave>
+                     <slave id="SIM_DISP" enabled="false" locked="false" index="0">
+                        <domain template="rw"/>
+                        <domain template="rw"/>
+                        <base_region start="0" size="1048576"/>
+                     </slave>
+                     <slave id="SRAM_OC_cm7" enabled="false" locked="false" index="0">
+                        <domain template="rw"/>
+                        <domain template="rw"/>
+                        <base_region start="0" size="128"/>
+                     </slave>
+                     <slave id="SIM_M4" enabled="false" locked="false" index="0">
+                        <domain template="rw"/>
+                        <domain template="rw"/>
+                        <base_region start="0" size="1048576"/>
+                     </slave>
+                     <slave id="CAAM" enabled="false" locked="false" index="0">
+                        <domain template="rw"/>
+                        <domain template="rw"/>
+                        <base_region start="0" size="8192"/>
+                     </slave>
+                     <slave id="SIM_M7" enabled="false" locked="false" index="0">
+                        <domain template="rw"/>
+                        <domain template="rw"/>
+                        <base_region start="0" size="1048576"/>
+                     </slave>
                      <slave id="SRAM_OC1" enabled="false" locked="false" index="0">
                         <domain template="rw"/>
                         <domain template="rw"/>
@@ -1138,21 +1194,6 @@
                         <domain template="rw"/>
                         <domain template="rw"/>
                         <base_region start="0" size="128"/>
-                     </slave>
-                     <slave id="SRAM_OC_cm4" enabled="false" locked="false" index="0">
-                        <domain template="rw"/>
-                        <domain template="rw"/>
-                        <base_region start="0" size="128"/>
-                     </slave>
-                     <slave id="SRAM_OC_cm7" enabled="false" locked="false" index="0">
-                        <domain template="rw"/>
-                        <domain template="rw"/>
-                        <base_region start="0" size="128"/>
-                     </slave>
-                     <slave id="CAAM" enabled="false" locked="false" index="0">
-                        <domain template="rw"/>
-                        <domain template="rw"/>
-                        <base_region start="0" size="8192"/>
                      </slave>
                      <slave id="SEMC" enabled="false" locked="false" index="0">
                         <domain template="rw"/>
@@ -1168,21 +1209,6 @@
                         <domain template="rw"/>
                         <domain template="rw"/>
                         <base_region start="0" size="4096"/>
-                     </slave>
-                     <slave id="SIM_DISP" enabled="false" locked="false" index="0">
-                        <domain template="rw"/>
-                        <domain template="rw"/>
-                        <base_region start="0" size="1048576"/>
-                     </slave>
-                     <slave id="SIM_M4" enabled="false" locked="false" index="0">
-                        <domain template="rw"/>
-                        <domain template="rw"/>
-                        <base_region start="0" size="1048576"/>
-                     </slave>
-                     <slave id="SIM_M7" enabled="false" locked="false" index="0">
-                        <domain template="rw"/>
-                        <domain template="rw"/>
-                        <base_region start="0" size="1048576"/>
                      </slave>
                   </slaves>
                </mrc>
@@ -1712,10 +1738,6 @@
                <mrcs>
                   <mrc checker_id="MRC">
                      <slaves>
-                        <slave id="SRAM_OC_cm7" enabled="false" locked="unlock" index="0">
-                           <domain template="NO_ACCESS"/>
-                           <base_region start="0" size="8192"/>
-                        </slave>
                         <slave id="SRAM_OC_cm4" enabled="false" locked="unlock" index="0">
                            <domain template="NO_ACCESS"/>
                            <base_region start="0" size="16384"/>
@@ -1723,6 +1745,10 @@
                         <slave id="SRAM_OC_ECC1" enabled="false" locked="unlock" index="0">
                            <domain template="NO_ACCESS"/>
                            <base_region start="0" size="4096"/>
+                        </slave>
+                        <slave id="SRAM_OC_cm7" enabled="false" locked="unlock" index="0">
+                           <domain template="NO_ACCESS"/>
+                           <base_region start="0" size="8192"/>
                         </slave>
                         <slave id="SRAM_OC_ECC2" enabled="false" locked="unlock" index="0">
                            <domain template="NO_ACCESS"/>
@@ -2295,10 +2321,6 @@
                <mrcs>
                   <mrc checker_id="MRC_XRDC">
                      <slaves>
-                        <slave id="SRAM_OC_cm7" enabled="false" locked="unlock" index="0">
-                           <domain template="NO_ACCESS"/>
-                           <base_region start="0" size="8192"/>
-                        </slave>
                         <slave id="SRAM_OC_cm4" enabled="false" locked="unlock" index="0">
                            <domain template="NO_ACCESS"/>
                            <base_region start="0" size="16384"/>
@@ -2306,6 +2328,10 @@
                         <slave id="SRAM_OC_ECC1" enabled="false" locked="unlock" index="0">
                            <domain template="NO_ACCESS"/>
                            <base_region start="0" size="4096"/>
+                        </slave>
+                        <slave id="SRAM_OC_cm7" enabled="false" locked="unlock" index="0">
+                           <domain template="NO_ACCESS"/>
+                           <base_region start="0" size="8192"/>
                         </slave>
                         <slave id="SRAM_OC_ECC2" enabled="false" locked="unlock" index="0">
                            <domain template="NO_ACCESS"/>

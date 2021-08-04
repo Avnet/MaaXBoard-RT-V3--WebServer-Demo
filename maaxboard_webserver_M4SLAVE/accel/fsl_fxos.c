@@ -204,7 +204,6 @@ status_t FXOS_ReadSensorData(fxos_handle_t *fxos_handle, fxos_data_t *sensorData
 status_t FXOS_ReadReg(fxos_handle_t *handle, uint8_t reg, uint8_t *val, uint8_t bytesNumber)
 {
     assert(handle);
-    assert(val);
 
     if ((handle->I2C_ReceiveFunc) == NULL)
     {

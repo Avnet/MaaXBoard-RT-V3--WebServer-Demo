@@ -1,0 +1,52 @@
+<!DOCTYPE HTML SYSTEM>
+<html>
+
+<head>
+<title>MCUXpresso SDK HTTP Server Example</title>
+<link rel="stylesheet" href="webconfig.css">
+</head>
+
+<body>
+
+    <div class="row">
+        <div class="menu_row">
+            <div id="board_info">
+                <span id="boardName">Board</span><br>
+                <span id="boardIP">IP</span><br>
+            </div>
+            <div id="board_status">
+                <div>
+             Current Wi-Fi Mode:
+                </div>
+                <div class="statusIndicator" id="statusAP">AP</div>
+                <div class="statusIndicator" id="statusCLI">Client</div>
+            </div>
+    
+        </div>
+    </div>
+    
+    <div class="row">
+        <div id='section_networks'>
+            <h3> Available Wi-Fi Networks - Click to Join:</h3>
+            <input type="checkbox" id="all_nets" name="scales" onclick="renderDuplicates();">
+            <label for="all_nets">Show All networks</label>
+            <div id="wifi_list">
+                <div id='wif_no_networks'>No Networks Availabel</div>
+            </div>
+        </div>
+    </div>
+
+
+    <h4>Description</h3>
+    <p>
+       By default, the board creates an Access Point and starts a server which provides this web interface.
+    </p>
+    <p>
+        This interface shows you nearby available Wi-Fi networks. Clicking on the one you would like to connect to allows you to enter the credentials. The board will then switch to client mode and attempt to connect to it.
+    </p>
+    <p>
+        If connection is successful, the credentials are stored in board flash memory so that next time the board starts up, it connects directly to the configured Wi-Fi network.
+    </p>
+</html>
+
+

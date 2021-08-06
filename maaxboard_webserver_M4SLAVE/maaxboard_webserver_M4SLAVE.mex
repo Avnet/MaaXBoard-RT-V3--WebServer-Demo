@@ -25,6 +25,10 @@
          <pins_profile>
             <processor_version>9.0.2</processor_version>
             <power_domains/>
+            <pin_labels>
+               <pin_label pin_num="T1" pin_signal="GPIO_EMC_B2_06" label="LIGHTRANGER_EN" identifier="SEMC_D22"/>
+               <pin_label pin_num="K3" pin_signal="GPIO_EMC_B2_02" label="LIGHTRANGER_INT" identifier="SEMC_D18"/>
+            </pin_labels>
          </pins_profile>
          <functions_list>
             <function name="BOARD_InitPins">
@@ -74,7 +78,7 @@
                   </pin>
                </pins>
             </function>
-            <function name="BOARD_FXOSInitPins">
+            <function name="BOARD_ClickInitPins">
                <description>configure i2c5 pin for FXOS8700 ecompass sensor</description>
                <options>
                   <callFromInitBoot>true</callFromInitBoot>
@@ -82,17 +86,17 @@
                   <enableClock>true</enableClock>
                </options>
                <dependencies>
-                  <dependency resourceType="Peripheral" resourceId="LPI2C3" description="Peripheral LPI2C3 is not initialized" problem_level="1" source="Pins:BOARD_FXOSInitPins">
+                  <dependency resourceType="Peripheral" resourceId="LPI2C3" description="Peripheral LPI2C3 is not initialized" problem_level="1" source="Pins:BOARD_ClickInitPins">
                      <feature name="initialized" evaluation="equal">
                         <data>true</data>
                      </feature>
                   </dependency>
-                  <dependency resourceType="SWComponent" resourceId="platform.drivers.common" description="Pins initialization requires the COMMON Driver in the project." problem_level="2" source="Pins:BOARD_FXOSInitPins">
+                  <dependency resourceType="SWComponent" resourceId="platform.drivers.common" description="Pins initialization requires the COMMON Driver in the project." problem_level="2" source="Pins:BOARD_ClickInitPins">
                      <feature name="enabled" evaluation="equal" configuration="cm7">
                         <data>true</data>
                      </feature>
                   </dependency>
-                  <dependency resourceType="SWComponent" resourceId="platform.drivers.iomuxc" description="Pins initialization requires the IOMUXC Driver in the project." problem_level="2" source="Pins:BOARD_FXOSInitPins">
+                  <dependency resourceType="SWComponent" resourceId="platform.drivers.iomuxc" description="Pins initialization requires the IOMUXC Driver in the project." problem_level="2" source="Pins:BOARD_ClickInitPins">
                      <feature name="enabled" evaluation="equal" configuration="cm7">
                         <data>true</data>
                      </feature>
@@ -113,6 +117,8 @@
                         <pin_feature name="drive_strength" value="Normal"/>
                      </pin_features>
                   </pin>
+                  <pin peripheral="GPIO8" signal="gpio_io, 16" pin_num="T1" pin_signal="GPIO_EMC_B2_06"/>
+                  <pin peripheral="GPIO8" signal="gpio_io, 12" pin_num="K3" pin_signal="GPIO_EMC_B2_02"/>
                </pins>
             </function>
          </functions_list>

@@ -21,7 +21,7 @@
 /*******************************************************************************
  * Code
  ******************************************************************************/
-static lpi2c_rtos_handle_t * rtosHandle_i2c_accel;
+static lpi2c_rtos_handle_t * rtosHandle_i2c_sensor;
 /* Get debug console frequency. */
 uint32_t BOARD_DebugConsoleSrcFreq(void)
 {
@@ -590,7 +590,7 @@ void BOARD_ConfigMPU(void)
 
 void BOARD_Accel_I2C_Init(void * rtos_handle)
 {
-	rtosHandle_i2c_accel = rtos_handle;
+	rtosHandle_i2c_sensor = rtos_handle;
 	NVIC_SetPriority(LPI2C3_IRQn, 5);
 	lpi2c_master_config_t masterConfig;
 	/*
@@ -610,7 +610,7 @@ void BOARD_Accel_I2C_Init(void * rtos_handle)
 
 status_t BOARD_Accel_I2C_Send(uint8_t deviceAddress, uint32_t subAddress, uint8_t subaddressSize, uint32_t txBuff)
 {
-	if (rtosHandle_i2c_accel==NULL)
+	if (rtosHandle_i2c_sensor==NULL)
 	{
 		return kStatus_Fail;
 	}
@@ -626,13 +626,13 @@ status_t BOARD_Accel_I2C_Send(uint8_t deviceAddress, uint32_t subAddress, uint8_
     masterXfer.dataSize       = 1;
     masterXfer.flags          = kLPI2C_TransferDefaultFlag;
 
-    return LPI2C_RTOS_Transfer(rtosHandle_i2c_accel, &masterXfer);
+    return LPI2C_RTOS_Transfer(rtosHandle_i2c_sensor, &masterXfer);
 }
 
 status_t BOARD_Accel_I2C_Receive(
     uint8_t deviceAddress, uint32_t subAddress, uint8_t subaddressSize, uint8_t *rxBuff, uint8_t rxBuffSize)
 {
-	if (rtosHandle_i2c_accel==NULL)
+	if (rtosHandle_i2c_sensor==NULL)
 	{
 		return kStatus_Fail;
 	}
@@ -647,7 +647,68 @@ status_t BOARD_Accel_I2C_Receive(
     masterXfer.dataSize       = rxBuffSize;
     masterXfer.flags          = kLPI2C_TransferDefaultFlag;
 
-    return LPI2C_RTOS_Transfer(rtosHandle_i2c_accel, &masterXfer);
+    return LPI2C_RTOS_Transfer(rtosHandle_i2c_sensor, &masterXfer);
+}
+
+void BOARD_Click_I2C_Init(void * rtos_handle)
+{
+	rtosHandle_i2c_sensor = rtos_handle;
+	NVIC_SetPriority(LPI2C3_IRQn, 5);
+	lpi2c_master_config_t masterConfig;
+	/*
+	 * masterConfig.debugEnable = false;
+	 * masterConfig.ignoreAck = false;
+	 * masterConfig.pinConfig = kLPI2C_2PinOpenDrain;
+	 * masterConfig.baudRate_Hz = 100000U;
+	 * masterConfig.busIdleTimeout_ns = 0;
+	 * masterConfig.pinLowTimeout_ns = 0;
+	 * masterConfig.sdaGlitchFilterWidth_ns = 0;
+	 * masterConfig.sclGlitchFilterWidth_ns = 0;
+	 */
+	LPI2C_MasterGetDefaultConfig(&masterConfig);
+	LPI2C_RTOS_Init((lpi2c_rtos_handle_t *)rtos_handle, LPI2C3, &masterConfig, (CLOCK_GetFreq(kCLOCK_OscRc48MDiv2)));
+
+}
+
+status_t BOARD_Click_I2C_Send(uint8_t deviceAddress, uint32_t subAddress, uint8_t subaddressSize, uint8_t * txBuff, uint8_t txSize)
+{
+	if (rtosHandle_i2c_sensor==NULL)
+	{
+		return kStatus_Fail;
+	}
+
+    lpi2c_master_transfer_t masterXfer;
+    memset(&masterXfer, 0, sizeof(masterXfer));
+    masterXfer.slaveAddress   = deviceAddress;
+    masterXfer.direction      = kLPI2C_Write;
+    masterXfer.subaddress     = (uint32_t)subAddress;
+    masterXfer.subaddressSize = subaddressSize;
+    masterXfer.data           = txBuff;
+    masterXfer.dataSize       = txSize;
+    masterXfer.flags          = kLPI2C_TransferDefaultFlag;
+
+    return LPI2C_RTOS_Transfer(rtosHandle_i2c_sensor, &masterXfer);
+}
+
+status_t BOARD_Click_I2C_Receive(
+    uint8_t deviceAddress, uint32_t subAddress, uint8_t subaddressSize, uint8_t *rxBuff, uint8_t rxBuffSize)
+{
+	if (rtosHandle_i2c_sensor==NULL)
+	{
+		return kStatus_Fail;
+	}
+
+    lpi2c_master_transfer_t masterXfer;
+    memset(&masterXfer, 0, sizeof(masterXfer));
+    masterXfer.slaveAddress   = deviceAddress;
+    masterXfer.direction      = kLPI2C_Read;
+    masterXfer.subaddress     = (uint32_t)subAddress;
+    masterXfer.subaddressSize = subaddressSize;
+    masterXfer.data           = rxBuff;
+    masterXfer.dataSize       = rxBuffSize;
+    masterXfer.flags          = kLPI2C_TransferDefaultFlag;
+
+    return LPI2C_RTOS_Transfer(rtosHandle_i2c_sensor, &masterXfer);
 }
 
 void BOARD_SD_Pin_Config(uint32_t speed, uint32_t strength)

@@ -89,7 +89,7 @@ static struct _wsclient *wsClients = NULL;
 static int16_t fxos_pitch;
 static int16_t fxos_roll;
 static int16_t fxos_yaw;
-
+static int16_t light_distance;
 
 enum USER_LED
 {
@@ -352,7 +352,7 @@ uint32_t ws_echo_error(void *param, WS_USER_CONTEXT_STRUCT context)
     return (0);
 }
 
-WS_PLUGIN_STRUCT ws_tbl[] = {{"/echo", ws_echo_connect, ws_echo_message, ws_echo_error, ws_echo_disconnect, NULL},
+WS_PLUGIN_STRUCT ws_tbl[] = {{"/test", ws_echo_connect, ws_echo_message, ws_echo_error, ws_echo_disconnect, NULL},
                              {0, 0, 0, 0, 0, 0}};
 #endif /* HTTPSRV_CFG_WEBSOCKET_ENABLED */
 
@@ -422,17 +422,17 @@ static int CGI_HandleGetSensor(HTTPSRV_CGI_REQ_STRUCT *param)
     if (param->request_method == HTTPSRV_REQ_GET)
     {
     	cJSON *jsonObj = cJSON_CreateObject();
-		int sensors[3] = {0,0,0};
+		int sensors[4] = {0,0,0};
 		sensors[0] = fxos_pitch;
 		sensors[1] = fxos_roll;
 		sensors[2] = fxos_yaw;
-
+		sensors[3] = light_distance;
 		cJSON *sensor = NULL;
 		cJSON *cmd = NULL;
 
 		if (param->request_method == HTTPSRV_REQ_GET)
 		{
-			sensor = cJSON_CreateIntArray(sensors,3);
+			sensor = cJSON_CreateIntArray(sensors,4);
 		}
 
 		cmd = cJSON_CreateString("imu");
@@ -447,6 +447,7 @@ static int CGI_HandleGetSensor(HTTPSRV_CGI_REQ_STRUCT *param)
 		response.data_length    = length;
 		response.content_length = response.data_length;
 		HTTPSRV_cgi_write(&response);
+		vPortFree(json_serialized);
 		cJSON_Delete(jsonObj);
     }
     return (response.content_length);
@@ -893,23 +894,19 @@ static void sensor_task(void *pvParameters)
 		length = strlen(json_serialized);
 
 		broadcast_wsclients(json_serialized, length);
-
+		vPortFree(json_serialized);
 		cJSON_Delete(jsonObj);
 	}
 	vTaskSuspend(NULL);
 }
 
-typedef struct imu_t {
+typedef struct sensor_t {
 	uint8_t data_type;
 	int16_t yaw_t;
 	int16_t roll_t;
 	int16_t pitch_t;
-} imu_t;
-
-typedef struct lightranger_t {
-	uint8_t data_type;
 	int16_t distance;
-}lightranger_t;
+} sensor_t;
 
 //union Sensor_data {
 //	imu_t fxos;
@@ -919,8 +916,7 @@ typedef struct lightranger_t {
 
 static void app_task(void *param)
 {
-	lightranger_t * light_ptr;
-	imu_t * imu_ptr;
+	sensor_t * sensor_ptr;
 
     size_t xReceivedBytes;
     (void)memset((void *)(char *)APP_SH_MEM_BASE, 0, SH_MEM_TOTAL_SIZE);
@@ -979,15 +975,16 @@ static void app_task(void *param)
         xReceivedBytes =
             xMessageBufferReceive(xSecondaryToPrimaryMessageBuffer, (void *)&sensor_data[0], APP_MESSAGE_BUFFER_SIZE, portMAX_DELAY);
 
-        (void)PRINTF("Primary core received a msg\r\n");
+//        (void)PRINTF("Primary core received a msg\r\n");
         if (sensor_data[0] == 0x01)
         {
         	// imu sensor
-        	imu_ptr = &sensor_data[0];
-        	fxos_pitch = imu_ptr->pitch_t;
-        	fxos_roll = imu_ptr->roll_t;
-        	fxos_yaw = imu_ptr->yaw_t;
-        	(void)PRINTF("Message: Size=%x, DATA = %d, %d, %d\r\n", xReceivedBytes, fxos_pitch, fxos_roll, fxos_yaw);
+        	sensor_ptr = &sensor_data[0];
+        	fxos_pitch = sensor_ptr->pitch_t;
+        	fxos_roll = sensor_ptr->roll_t;
+        	fxos_yaw = sensor_ptr->yaw_t;
+        	light_distance = sensor_ptr->distance;
+        	(void)PRINTF("Message: Size=%x, DATA = %d, %d, %d, %d\r\n", xReceivedBytes, fxos_pitch, fxos_roll, fxos_yaw, light_distance);
         }
     }
 

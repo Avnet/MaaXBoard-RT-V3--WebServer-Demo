@@ -62,6 +62,11 @@
 #endif
 #define MU_IRQ_PRIORITY (2)
 
+/* CLICK BOARD sensors */
+#define BOARD_LIGHTRANGER_GPIO	GPIO8
+#define BOARD_LIGHTRANGER_GPIO_INT_PIN	(12U)
+#define BOARD_LIGHTRANGER_GPIO_EN_PIN	(16U)
+
 /*! @brief The USER_LED used for board */
 #define LOGIC_LED_ON  (0U)
 #define LOGIC_LED_OFF (1U)
@@ -248,6 +253,11 @@ void BOARD_Accel_I2C_Init(void * rtos_handle);
 status_t BOARD_Accel_I2C_Receive(
     uint8_t deviceAddress, uint32_t subAddress, uint8_t subaddressSize, uint8_t *rxBuff, uint8_t rxBuffSize);
 status_t BOARD_Accel_I2C_Send(uint8_t deviceAddress, uint32_t subAddress, uint8_t subaddressSize, uint32_t txBuff);
+
+void BOARD_Click_I2C_Init(void * rtos_handle);
+status_t BOARD_Click_I2C_Send(uint8_t deviceAddress, uint32_t subAddress, uint8_t subaddressSize, uint8_t * txBuff, uint8_t txSize);
+status_t BOARD_Click_I2C_Receive(
+    uint8_t deviceAddress, uint32_t subAddress, uint8_t subaddressSize, uint8_t *rxBuff, uint8_t rxBuffSize);
 
 #if defined(__cplusplus)
 }

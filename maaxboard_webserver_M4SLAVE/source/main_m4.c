@@ -21,6 +21,7 @@
 #include "fsl_fxos.h"
 #include "fsl_lpi2c.h"
 #include "fsl_lpi2c_freertos.h"
+#include "lightranger8.h"
 #include "math.h"
 /*******************************************************************************
  * Definitions
@@ -81,6 +82,7 @@ unsigned char rpmsg_sh_mem[SH_MEM_TOTAL_SIZE] __attribute__((section(".noinit.$r
 #define DegToRad 0.017453292
 #define RadToDeg 57.295779
 
+#define OFFSET_CALCULATED	1
 
 /*******************************************************************************
  * Prototypes
@@ -143,10 +145,22 @@ double g_Roll   = 0;
 
 bool g_FirstRun = true;
 
-static lpi2c_rtos_handle_t rtosHandle_i2c_accel;
+static lpi2c_rtos_handle_t rtosHandle_i2c_sensor;
 static volatile uint16_t RemoteAppReadyEventData = 0U;
 static StaticTask_t xTaskBuffer;
 static StackType_t xStack[APP_TASK_STACK_SIZE];
+
+/*******************************************************************************
+ * Globals
+ ******************************************************************************/
+static lightranger8_t lightranger8;
+static int16_t offset = -9;
+static uint16_t period_ms = 100;
+static uint32_t budget_us = 1000000;
+static int16_t calibration_distance_mm = 100;
+
+static uint16_t light_distance=0;
+
 
 void vApplicationGetIdleTaskMemory(StaticTask_t **ppxIdleTaskTCBBuffer,
                                    StackType_t **ppxIdleTaskStackBuffer,
@@ -241,12 +255,13 @@ void SystemInitHook(void)
     (void)MCMGR_EarlyInit();
 }
 
-static void Sensor_ReadData(int16_t *Ax, int16_t *Ay, int16_t *Az, int16_t *Mx, int16_t *My, int16_t *Mz)
+static status_t Sensor_ReadData(int16_t *Ax, int16_t *Ay, int16_t *Az, int16_t *Mx, int16_t *My, int16_t *Mz)
 {
     fxos_data_t fxos_data;
 
     if (FXOS_ReadSensorData(&g_fxosHandle, &fxos_data) != kStatus_Success)
     {
+    	return kStatus_Fail;
         PRINTF("Failed to read acceleration data!\r\n");
     }
     /* Get the accel data from the sensor data structure in 14 bit left format data*/
@@ -259,6 +274,7 @@ static void Sensor_ReadData(int16_t *Ax, int16_t *Ay, int16_t *Az, int16_t *Mx, 
     *Mx = (int16_t)((uint16_t)((uint16_t)fxos_data.magXMSB << 8) | (uint16_t)fxos_data.magXLSB);
     *My = (int16_t)((uint16_t)((uint16_t)fxos_data.magYMSB << 8) | (uint16_t)fxos_data.magYLSB);
     *Mz = (int16_t)((uint16_t)((uint16_t)fxos_data.magZMSB << 8) | (uint16_t)fxos_data.magZLSB);
+    return kStatus_Success;
 }
 
 static void Magnetometer_Calibrate(void)
@@ -328,89 +344,136 @@ static void Magnetometer_Calibrate(void)
     }
 }
 
-typedef struct imu_t {
+typedef struct sensor_t {
 	uint8_t data_type;
 	int16_t yaw_t;
 	int16_t roll_t;
 	int16_t pitch_t;
-} imu_t;
-
-typedef struct lightranger_t {
-	uint8_t data_type;
 	int16_t distance;
-}lightranger_t;
-
-union Sensor_data {
-	imu_t fxos;
-	lightranger_t light_distance;
-};
+} sensor_t;
 
 
-static void app_task(void *param)
+static status_t read_imu_sensor()
 {
-	union Sensor_data sensor_data;
-	int32_t length = 0;
-	int size = 0;
-    /* Create the Secondary-To-Primary message buffer, statically allocated at a known location
-       as both cores need to know where they are. */
-    xSecondaryToPrimaryMessageBuffer = xMessageBufferCreateStatic(
-        /* The buffer size in bytes. */
-        APP_MESSAGE_BUFFER_SIZE,
-        /* Statically allocated buffer storage area. */
-        &ucSecondaryToPrimaryBufferStorage,
-        /* Message buffer handle. */
-        &xSecondaryToPrimaryMessageBufferStruct);
-
-    uint32_t startupData;
-    mcmgr_status_t status;
-    int temp = 0;
-    /* Get the startup data */
-    do
-    {
-        status = MCMGR_GetStartupData(&startupData);
-    } while (status != kStatus_MCMGR_Success);
-
-    (void)MCMGR_RegisterEvent(kMCMGR_FreeRtosMessageBuffersEvent, FreeRtosMessageBuffersEventHandler, ((void *)0));
-
-    /* Signal the other core we are ready by triggering the event and passing the APP_READY_EVENT_DATA */
-    (void)MCMGR_TriggerEvent(kMCMGR_RemoteApplicationEvent, APP_READY_EVENT_DATA);
-
-	fxos_config_t config = {0};
-    status_t result;
     uint16_t i              = 0;
-    uint16_t loopCounter    = 0;
     double sinAngle         = 0;
     double cosAngle         = 0;
     double Bx               = 0;
     double By               = 0;
-    uint8_t array_addr_size = 0;
 
-	BOARD_Accel_I2C_Init(&rtosHandle_i2c_accel);
+
+	SampleEventFlag = 0;
+	g_Ax_Raw        = 0;
+	g_Ay_Raw        = 0;
+	g_Az_Raw        = 0;
+	g_Ax            = 0;
+	g_Ay            = 0;
+	g_Az            = 0;
+	g_Mx_Raw        = 0;
+	g_My_Raw        = 0;
+	g_Mz_Raw        = 0;
+	g_Mx            = 0;
+	g_My            = 0;
+	g_Mz            = 0;
+
+	/* Read sensor data */
+	if (Sensor_ReadData(&g_Ax_Raw, &g_Ay_Raw, &g_Az_Raw, &g_Mx_Raw, &g_My_Raw, &g_Mz_Raw) != kStatus_Success)
+	{
+		return kStatus_Fail;
+	}
+
+	/* Average accel value */
+	for (i = 1; i < MAX_ACCEL_AVG_COUNT; i++)
+	{
+		g_Ax_buff[i] = g_Ax_buff[i - 1];
+		g_Ay_buff[i] = g_Ay_buff[i - 1];
+		g_Az_buff[i] = g_Az_buff[i - 1];
+	}
+
+	g_Ax_buff[0] = g_Ax_Raw;
+	g_Ay_buff[0] = g_Ay_Raw;
+	g_Az_buff[0] = g_Az_Raw;
+
+	for (i = 0; i < MAX_ACCEL_AVG_COUNT; i++)
+	{
+		g_Ax += (double)g_Ax_buff[i];
+		g_Ay += (double)g_Ay_buff[i];
+		g_Az += (double)g_Az_buff[i];
+	}
+
+	g_Ax /= MAX_ACCEL_AVG_COUNT;
+	g_Ay /= MAX_ACCEL_AVG_COUNT;
+	g_Az /= MAX_ACCEL_AVG_COUNT;
+
+	if (g_FirstRun)
+	{
+		g_Mx_LP = g_Mx_Raw;
+		g_My_LP = g_My_Raw;
+		g_Mz_LP = g_Mz_Raw;
+	}
+
+	g_Mx_LP += ((double)g_Mx_Raw - g_Mx_LP) * 0.01;
+	g_My_LP += ((double)g_My_Raw - g_My_LP) * 0.01;
+	g_Mz_LP += ((double)g_Mz_Raw - g_Mz_LP) * 0.01;
+
+	/* Calculate magnetometer values */
+	g_Mx = g_Mx_LP - g_Mx_Offset;
+	g_My = g_My_LP - g_My_Offset;
+	g_Mz = g_Mz_LP - g_Mz_Offset;
+
+	/* Calculate roll angle g_Roll (-180deg, 180deg) and sin, cos */
+	g_Roll   = atan2(g_Ay, g_Az) * RadToDeg;
+	sinAngle = sin(g_Roll * DegToRad);
+	cosAngle = cos(g_Roll * DegToRad);
+
+	/* De-rotate by roll angle g_Roll */
+	By   = g_My * cosAngle - g_Mz * sinAngle;
+	g_Mz = g_Mz * cosAngle + g_My * sinAngle;
+	g_Az = g_Ay * sinAngle + g_Az * cosAngle;
+
+	/* Calculate pitch angle g_Pitch (-90deg, 90deg) and sin, cos*/
+	g_Pitch  = atan2(-g_Ax, g_Az) * RadToDeg;
+	sinAngle = sin(g_Pitch * DegToRad);
+	cosAngle = cos(g_Pitch * DegToRad);
+
+	/* De-rotate by pitch angle g_Pitch */
+	Bx = g_Mx * cosAngle + g_Mz * sinAngle;
+
+	/* Calculate yaw = ecompass angle psi (-180deg, 180deg) */
+	g_Yaw = atan2(-By, Bx) * RadToDeg;
+	if (g_FirstRun)
+	{
+		g_Yaw_LP   = g_Yaw;
+		g_FirstRun = false;
+	}
+
+	g_Yaw_LP += (g_Yaw - g_Yaw_LP) * 0.01;
+	return kStatus_Success;
+}
+
+static void read_imu(void *param)
+{
+	fxos_config_t config = {0};
+    status_t result;
+
     config.I2C_SendFunc    = BOARD_Accel_I2C_Send;
     config.I2C_ReceiveFunc = BOARD_Accel_I2C_Receive;
 
     /* Initialize sensor devices */
-    array_addr_size = sizeof(g_sensor_address) / sizeof(g_sensor_address[0]);
-    for (i = 0; i < array_addr_size; i++)
-    {
-        config.slaveAddress = g_sensor_address[i];
-        /* Initialize accelerometer sensor */
-        result = FXOS_Init(&g_fxosHandle, &config);
-        if (result == kStatus_Success)
-        {
-            break;
-        }
-    }
+	config.slaveAddress = 0x1E;
+	/* Initialize accelerometer sensor */
+	result = FXOS_Init(&g_fxosHandle, &config);
 
     if (result != kStatus_Success)
 	{
 		PRINTF("\r\nSensor device initialize failed!\r\n");
+		vTaskSuspend(NULL);
 	}
 
 	/* Get sensor range */
 	if (FXOS_ReadReg(&g_fxosHandle, XYZ_DATA_CFG_REG, &g_sensorRange, 1) != kStatus_Success)
 	{
-		return -1;
+		vTaskSuspend(NULL);
 	}
 	if (g_sensorRange == 0x00)
 	{
@@ -431,108 +494,136 @@ static void app_task(void *param)
    /* Infinite loops */
 	while(1)
 	{
-		SampleEventFlag = 0;
-		g_Ax_Raw        = 0;
-		g_Ay_Raw        = 0;
-		g_Az_Raw        = 0;
-		g_Ax            = 0;
-		g_Ay            = 0;
-		g_Az            = 0;
-		g_Mx_Raw        = 0;
-		g_My_Raw        = 0;
-		g_Mz_Raw        = 0;
-		g_Mx            = 0;
-		g_My            = 0;
-		g_Mz            = 0;
-
-		/* Read sensor data */
-		Sensor_ReadData(&g_Ax_Raw, &g_Ay_Raw, &g_Az_Raw, &g_Mx_Raw, &g_My_Raw, &g_Mz_Raw);
-
-		/* Average accel value */
-		for (i = 1; i < MAX_ACCEL_AVG_COUNT; i++)
+		if (read_imu_sensor() != kStatus_Success)
 		{
-			g_Ax_buff[i] = g_Ax_buff[i - 1];
-			g_Ay_buff[i] = g_Ay_buff[i - 1];
-			g_Az_buff[i] = g_Az_buff[i - 1];
-		}
-
-		g_Ax_buff[0] = g_Ax_Raw;
-		g_Ay_buff[0] = g_Ay_Raw;
-		g_Az_buff[0] = g_Az_Raw;
-
-		for (i = 0; i < MAX_ACCEL_AVG_COUNT; i++)
-		{
-			g_Ax += (double)g_Ax_buff[i];
-			g_Ay += (double)g_Ay_buff[i];
-			g_Az += (double)g_Az_buff[i];
-		}
-
-		g_Ax /= MAX_ACCEL_AVG_COUNT;
-		g_Ay /= MAX_ACCEL_AVG_COUNT;
-		g_Az /= MAX_ACCEL_AVG_COUNT;
-
-		if (g_FirstRun)
-		{
-			g_Mx_LP = g_Mx_Raw;
-			g_My_LP = g_My_Raw;
-			g_Mz_LP = g_Mz_Raw;
-		}
-
-		g_Mx_LP += ((double)g_Mx_Raw - g_Mx_LP) * 0.01;
-		g_My_LP += ((double)g_My_Raw - g_My_LP) * 0.01;
-		g_Mz_LP += ((double)g_Mz_Raw - g_Mz_LP) * 0.01;
-
-		/* Calculate magnetometer values */
-		g_Mx = g_Mx_LP - g_Mx_Offset;
-		g_My = g_My_LP - g_My_Offset;
-		g_Mz = g_Mz_LP - g_Mz_Offset;
-
-		/* Calculate roll angle g_Roll (-180deg, 180deg) and sin, cos */
-		g_Roll   = atan2(g_Ay, g_Az) * RadToDeg;
-		sinAngle = sin(g_Roll * DegToRad);
-		cosAngle = cos(g_Roll * DegToRad);
-
-		/* De-rotate by roll angle g_Roll */
-		By   = g_My * cosAngle - g_Mz * sinAngle;
-		g_Mz = g_Mz * cosAngle + g_My * sinAngle;
-		g_Az = g_Ay * sinAngle + g_Az * cosAngle;
-
-		/* Calculate pitch angle g_Pitch (-90deg, 90deg) and sin, cos*/
-		g_Pitch  = atan2(-g_Ax, g_Az) * RadToDeg;
-		sinAngle = sin(g_Pitch * DegToRad);
-		cosAngle = cos(g_Pitch * DegToRad);
-
-		/* De-rotate by pitch angle g_Pitch */
-		Bx = g_Mx * cosAngle + g_Mz * sinAngle;
-
-		/* Calculate yaw = ecompass angle psi (-180deg, 180deg) */
-		g_Yaw = atan2(-By, Bx) * RadToDeg;
-		if (g_FirstRun)
-		{
-			g_Yaw_LP   = g_Yaw;
-			g_FirstRun = false;
-		}
-
-		g_Yaw_LP += (g_Yaw - g_Yaw_LP) * 0.01;
-		if (++loopCounter > 10)
-		{
-			sensor_data.fxos.data_type = 0x01;
-			sensor_data.fxos.pitch_t = (int16_t)(g_Pitch*10);
-			sensor_data.fxos.roll_t = (int16_t)(g_Roll*10);
-			sensor_data.fxos.yaw_t = (int16_t)(g_Yaw_LP*10);
-
-			//length = sprintf((char *)sensor_data, "\r\nCompass Angle: %3.1lf", g_Yaw_LP);
-			//length = sprintf((char *)sensor_data, "\r\nCompass Angle: %d", temp);
-//			temp++;
-//			if (temp == 100)
-//			{
-//				temp = 0;
-//			}
-			loopCounter = 0;
-			size = xMessageBufferSend(xSecondaryToPrimaryMessageBuffer, (void *)&sensor_data, (size_t)sizeof(sensor_data), 0);
+			vTaskSuspend(NULL);
 		}
 		vTaskDelay(10/portTICK_PERIOD_MS);
 	} /* End infinite loops */
+}
+
+static status_t sensor_init()
+{
+    lightranger8_cfg_t lightranger8_cfg;         /**< Click config object. */
+    // Click initialization.
+
+    lightranger8_cfg_setup( &lightranger8_cfg );
+    status_t init_flag = lightranger8_init( &lightranger8, &lightranger8_cfg );
+    if ( init_flag != kStatus_Success ) {
+    	PRINTF(" Application Init error.\r\n");
+    	PRINTF(" Please, run program again... \r\n");
+    	return init_flag;
+    }
+
+    lightranger8_power_on( &lightranger8 );
+    PRINTF(" Wait until the configuration of the chip is completed...\r\n" );
+    if ( lightranger8_default_cfg( &lightranger8 ) != 0 ) {
+    	PRINTF(" Sensor config error. \r\n");
+        return kStatus_Fail;
+    }
+    lightranger8_set_distance_mode( &lightranger8, LIGHTRANGER8_DISTANCE_MODE_MEDIUM );
+    lightranger8_set_measurement_timing_budget( &lightranger8, budget_us );
+    SDK_DelayAtLeastUs(1000000, SDK_DEVICE_MAXIMUM_CPU_CLOCK_FREQUENCY);
+
+#ifdef OFFSET_CALCULATED
+    lightranger8_set_offset(&lightranger8, offset);
+#else
+    PRINTF(" -------------------------------------------------------------------------\r\n");
+    PRINTF(" For calibration place an object at %.1f cm distance from sensor.\r\n", ( float )calibration_distance_mm / 10 );
+    SDK_DelayAtLeastUs(1000000, SDK_DEVICE_MAXIMUM_CPU_CLOCK_FREQUENCY);
+    SDK_DelayAtLeastUs(1000000, SDK_DEVICE_MAXIMUM_CPU_CLOCK_FREQUENCY);
+    SDK_DelayAtLeastUs(1000000, SDK_DEVICE_MAXIMUM_CPU_CLOCK_FREQUENCY);
+    SDK_DelayAtLeastUs(1000000, SDK_DEVICE_MAXIMUM_CPU_CLOCK_FREQUENCY);
+    SDK_DelayAtLeastUs(1000000, SDK_DEVICE_MAXIMUM_CPU_CLOCK_FREQUENCY);
+    PRINTF(" -------------------------------------------------------------------------\r\n");
+    PRINTF(" ---------------    Sensor calibration is in progress...     ---------------\r\n");
+    SDK_DelayAtLeastUs(1000000, SDK_DEVICE_MAXIMUM_CPU_CLOCK_FREQUENCY);
+    SDK_DelayAtLeastUs(1000000, SDK_DEVICE_MAXIMUM_CPU_CLOCK_FREQUENCY);
+    SDK_DelayAtLeastUs(1000000, SDK_DEVICE_MAXIMUM_CPU_CLOCK_FREQUENCY);
+    SDK_DelayAtLeastUs(1000000, SDK_DEVICE_MAXIMUM_CPU_CLOCK_FREQUENCY);
+    SDK_DelayAtLeastUs(1000000, SDK_DEVICE_MAXIMUM_CPU_CLOCK_FREQUENCY);
+
+    lightranger8_calibrate_offset( &lightranger8, calibration_distance_mm, period_ms, &offset );
+    PRINTF("offset:%d\r\n", offset);
+    SDK_DelayAtLeastUs(500000, SDK_DEVICE_MAXIMUM_CPU_CLOCK_FREQUENCY);
+#endif
+    lightranger8_start_measurement( &lightranger8, period_ms );
+    PRINTF(" -------------------------------------------------------------------------\r\n");
+    PRINTF(" -------------    Sensor measurement commencing...    -------------\r\n");
+
+    SDK_DelayAtLeastUs(100000, SDK_DEVICE_MAXIMUM_CPU_CLOCK_FREQUENCY);
+    return kStatus_Success;
+}
+
+static void read_lightranger(void *param)
+{
+	lightranger8.I2C_SendFunc = BOARD_Click_I2C_Send;
+	lightranger8.I2C_ReceiveFunc = BOARD_Click_I2C_Receive;
+	int retry = 0;
+	if (sensor_init() != kStatus_Success)
+	{
+		PRINTF("light ranger task deleted\r\n");
+		vTaskSuspend(NULL);
+	}
+
+	while(1)
+	{
+		retry = 0;
+		while ( lightranger8_new_data_ready( &lightranger8 ) != 0 ) {
+			vTaskDelay(1/portTICK_PERIOD_MS);
+			retry++;
+			if (retry>2000)
+			{
+				vTaskSuspend(NULL);
+				break;
+			}
+		}
+		light_distance = lightranger8_get_distance( &lightranger8 );
+//		PRINTF(" ----------------------\r\n");
+//		PRINTF(" Distance: %.1f cm \r\n", ( float )distance / 10 );
+		vTaskDelay(2000/portTICK_PERIOD_MS);
+	}
+	vTaskSuspend(NULL);
+}
+
+static void transfer_sensor_data(void *param)
+{
+	sensor_t sensor_data;
+	/* Create the Secondary-To-Primary message buffer, statically allocated at a known location
+	   as both cores need to know where they are. */
+	xSecondaryToPrimaryMessageBuffer = xMessageBufferCreateStatic(
+		/* The buffer size in bytes. */
+		APP_MESSAGE_BUFFER_SIZE,
+		/* Statically allocated buffer storage area. */
+		&ucSecondaryToPrimaryBufferStorage,
+		/* Message buffer handle. */
+		&xSecondaryToPrimaryMessageBufferStruct);
+
+	uint32_t startupData;
+	mcmgr_status_t status;
+
+	/* Get the startup data */
+	do
+	{
+		status = MCMGR_GetStartupData(&startupData);
+	} while (status != kStatus_MCMGR_Success);
+
+	(void)MCMGR_RegisterEvent(kMCMGR_FreeRtosMessageBuffersEvent, FreeRtosMessageBuffersEventHandler, ((void *)0));
+
+	/* Signal the other core we are ready by triggering the event and passing the APP_READY_EVENT_DATA */
+	(void)MCMGR_TriggerEvent(kMCMGR_RemoteApplicationEvent, APP_READY_EVENT_DATA);
+
+
+	while(1)
+	{
+		sensor_data.data_type = 0x01;
+		sensor_data.pitch_t = (int16_t)(g_Pitch*10);
+		sensor_data.roll_t = (int16_t)(g_Roll*10);
+		sensor_data.yaw_t = (int16_t)(g_Yaw_LP*10);
+		sensor_data.distance = light_distance;
+		xMessageBufferSend(xSecondaryToPrimaryMessageBuffer, (void *)&sensor_data, (size_t)sizeof(sensor_data), 0);
+		vTaskDelay(200/portTICK_PERIOD_MS);
+	}
 }
 
 /*!
@@ -542,15 +633,19 @@ int main(void)
 {
     /* Initialize standard SDK demo application pins */
     BOARD_ConfigMPU();
-    BOARD_FXOSInitPins();
+    BOARD_ClickInitPins();
     BOARD_BootClockRUN();
 
     /* Initialize MCMGR before calling its API */
     (void)MCMGR_Init();
 
+    BOARD_Click_I2C_Init(&rtosHandle_i2c_sensor);
     //xTaskCreateStatic(app_task, "APP_TASK", APP_TASK_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1U, xStack, &xTaskBuffer);
 
-    xTaskCreate(app_task, "APP_TASK", configMINIMAL_STACK_SIZE + 200, NULL, 3, &xTaskBuffer);
+    xTaskCreate(read_imu, "IMU_TASK", configMINIMAL_STACK_SIZE + 200, NULL, 3, NULL);
+    xTaskCreate(read_lightranger, "LR_TASK", configMINIMAL_STACK_SIZE + 200, NULL, 3, NULL);
+    xTaskCreate(transfer_sensor_data, "MC_TASK", configMINIMAL_STACK_SIZE + 200, NULL, 3, &xTaskBuffer);
+
 
     vTaskStartScheduler();
 

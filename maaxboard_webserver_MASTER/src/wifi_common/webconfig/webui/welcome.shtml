@@ -1,0 +1,27 @@
+<!DOCTYPE HTML SYSTEM>
+<html>
+
+<head>
+<title>MCUXpresso SDK HTTP Server Example</title>
+    <style type="text/css">
+    <!--
+    @import"httpsrv.css";
+    -->
+    </style>
+</head>
+
+<body>
+    <h2>Welcome!</h2>
+    <p>
+       This is an example HTTP Server application using MCUXpresso SDK lwIP and FreeRTOS.
+   </p>
+   <p>MAC Address: <%network:mac%></p>
+   <p>IP Address: <%network:ip%></p>
+
+   <h3>Following Features can be tested</h3>
+   <ul>
+    <li>LED Control</li>        
+    <li>6DOF IMU compensated Magnetometer</li> 
+   </ul>            
+</body>
+</html>

@@ -12,6 +12,9 @@ package_id: MIMXRT1176DVMAA
 mcu_data: ksdk2_0
 processor_version: 9.0.2
 board: MIMXRT1170-EVK
+pin_labels:
+- {pin_num: T1, pin_signal: GPIO_EMC_B2_06, label: LIGHTRANGER_EN, identifier: SEMC_D22}
+- {pin_num: K3, pin_signal: GPIO_EMC_B2_02, label: LIGHTRANGER_INT, identifier: SEMC_D18}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 
@@ -26,26 +29,28 @@ board: MIMXRT1170-EVK
  * 
  * END ****************************************************************************************************************/
 void BOARD_InitBootPins(void) {
-    BOARD_FXOSInitPins();
+    BOARD_ClickInitPins();
 }
 
 /*
  * TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
-BOARD_FXOSInitPins:
+BOARD_ClickInitPins:
 - options: {callFromInitBoot: 'true', coreID: cm4, enableClock: 'true'}
 - pin_list:
   - {pin_num: D9, peripheral: LPI2C3, signal: SCL, pin_signal: GPIO_DISP_B2_10, software_input_on: Enable, open_drain: Enable, drive_strength: Normal}
   - {pin_num: A6, peripheral: LPI2C3, signal: SDA, pin_signal: GPIO_DISP_B2_11, software_input_on: Enable, open_drain: Enable, drive_strength: Normal}
+  - {pin_num: T1, peripheral: GPIO8, signal: 'gpio_io, 16', pin_signal: GPIO_EMC_B2_06}
+  - {pin_num: K3, peripheral: GPIO8, signal: 'gpio_io, 12', pin_signal: GPIO_EMC_B2_02}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 
 /* FUNCTION ************************************************************************************************************
  *
- * Function Name : BOARD_FXOSInitPins, assigned for the Cortex-M4F core.
+ * Function Name : BOARD_ClickInitPins, assigned for the Cortex-M4F core.
  * Description   : configure i2c5 pin for FXOS8700 ecompass sensor
  *
  * END ****************************************************************************************************************/
-void BOARD_FXOSInitPins(void) {
+void BOARD_ClickInitPins(void) {
   CLOCK_EnableClock(kCLOCK_Iomuxc);           /* LPCG on: LPCG is ON. */
 
   IOMUXC_SetPinMux(
@@ -54,6 +59,12 @@ void BOARD_FXOSInitPins(void) {
   IOMUXC_SetPinMux(
       IOMUXC_GPIO_DISP_B2_11_LPI2C3_SDA,      /* GPIO_DISP_B2_11 is configured as LPI2C3_SDA */
       1U);                                    /* Software Input On Field: Force input path of pad GPIO_DISP_B2_11 */
+  IOMUXC_SetPinMux(
+      IOMUXC_GPIO_EMC_B2_02_GPIO8_IO12,       /* GPIO_EMC_B2_02 is configured as GPIO8_IO12 */
+      0U);                                    /* Software Input On Field: Input Path is determined by functionality */
+  IOMUXC_SetPinMux(
+      IOMUXC_GPIO_EMC_B2_06_GPIO8_IO16,       /* GPIO_EMC_B2_06 is configured as GPIO8_IO16 */
+      0U);                                    /* Software Input On Field: Input Path is determined by functionality */
   IOMUXC_SetPinConfig(
       IOMUXC_GPIO_DISP_B2_10_LPI2C3_SCL,      /* GPIO_DISP_B2_10 PAD functional properties : */
       0x14U);                                 /* Slew Rate Field: Slow Slew Rate

@@ -1,0 +1,84 @@
+<!DOCTYPE HTML SYSTEM>
+<html>
+
+<head>
+<title>MCUXpresso SDK HTTP Server Example</title>
+    <style type="text/css">
+    <!--
+    @import"httpsrv.css";
+    -->
+    </style>
+
+    <script src="request.js" type="text/javascript"></script>
+
+    <script type="text/javascript">
+        function parse_vars(data)
+        {
+            var object1 = JSON.parse(data);
+            if (object1.cmdType=='getLed') {
+                if ((object1.led).length==3) {
+                    for (let i=0; i<3;i++) {
+                        let elem = document.getElementById('L'+i);
+                        if (object1.led.charAt(i)=='1') {
+                            elem.value = 'ON';
+                            elem.className = 'led_on';
+                        } else{
+                            elem.value = 'OFF';
+                            elem.className = 'led_off';
+                        }
+                    }
+                }
+            }
+        }
+        function switchLED(id) 
+        {                        
+            let elem = document.getElementById(id);      
+            let state;            
+            if (elem.value=="OFF")
+            {                
+                state = 1
+                elem.value = 'ON';
+                elem.className = 'led_on';                                      
+            }
+            else
+            {
+                state = 0;
+                elem.value = 'OFF';
+                elem.className = 'led_off';                                
+            }
+            let param = {
+                cmdType: 'setLed',
+                ledNum: id.charCodeAt(1) - 0x30,
+                ledState: state
+            }            
+            make_post_request('led.cgi',JSON.stringify(param));
+        }
+        window.onload = (event) => {         
+            make_request('led.cgi');              
+        }
+
+    </script>
+</head>
+
+<body>
+    <h2>LED Demo</h2>
+    <div style="text-align: center;">
+        <table>
+            <tr>
+                <td>RED LED</td>
+                <td> <input type='button' id = 'L0'  class='led_off' onclick='switchLED(this.id)' value='OFF'/>  </td>
+            </tr>
+            <tr>
+                <td>GREEN LED</td>
+                <td> <input type='button' id = 'L1'  class='led_off' onclick='switchLED(this.id)' value='OFF'/>  </td>
+            </tr>            
+            <tr>
+                <td>BLUE LED</td>
+                <td> <input type='button' id = 'L2'  class='led_off' onclick='switchLED(this.id)' value='OFF'/>  </td>
+            </tr>
+        </table>
+        
+    </div>
+</html>
+
+

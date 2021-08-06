@@ -1,0 +1,72 @@
+<!DOCTYPE HTML SYSTEM>
+<html>
+
+<head>
+<title>MCUXpresso SDK HTTP Server Example</title>
+    <style type="text/css">
+        <!--
+        @import"httpsrv.css";
+        -->
+    </style>
+
+    <script src="request.js" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+
+    <script type="text/javascript">
+        var rtc_value = new Array(3);
+        var data_received = 0;
+        var maxDataPoints = 20;
+        var dataPlot;        
+
+        function removeData() {
+            dataPlot.data.labels.shift();
+            dataPlot.data.datasets[0].data.shift();
+
+        }
+        function addData(label, data) {
+            if (dataPlot.data.labels.length > maxDataPoints) removeData();
+            dataPlot.data.labels.push(label);
+            dataPlot.data.datasets[0].data.push(data);
+            dataPlot.update();
+        }
+
+        function parse_vars(data)
+        {
+            var object1 = JSON.parse(data);
+            if (object1.cmdType=='imu') {
+                let data = object1.sensor;
+                let today = new Date();
+                let t = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+                addData(t, data[0]);
+                console.log(data);                
+            }
+        }
+
+        function init()
+        {
+            dataPlot = new Chart(document.getElementById('myChart'), {
+                type: 'line',
+                data: {
+                labels: [],
+                datasets: [{
+                    data: [],
+                    label: "pitch",
+                    borderColor: "#3e95cd",
+                    fill: false
+                }]
+                }
+            });
+            setInterval(function(){make_request('imu.cgi');}, 1000);
+        }
+        window.onload = init;        
+    </script>
+
+</head>
+
+<body>
+    <h2>Motion & eCompass</h2>
+    <p>
+       Through websocket, data will be retrieved periodically.
+    </p>
+    <canvas id="myChart" width="400" height="400"></canvas>
+</html>

@@ -186,6 +186,7 @@ static int cgi_led(HTTPSRV_CGI_REQ_STRUCT *param)
 		response.data_length    = length;
 		response.content_length = response.data_length;
 		HTTPSRV_cgi_write(&response);
+		vPortFree(json_serialized);
 		cJSON_Delete(jsonObj);
 	}
 	else if (param->request_method == HTTPSRV_REQ_POST)
@@ -984,7 +985,7 @@ static void app_task(void *param)
         	fxos_roll = sensor_ptr->roll_t;
         	fxos_yaw = sensor_ptr->yaw_t;
         	light_distance = sensor_ptr->distance;
-        	(void)PRINTF("Message: Size=%x, DATA = %d, %d, %d, %d\r\n", xReceivedBytes, fxos_pitch, fxos_roll, fxos_yaw, light_distance);
+//        	(void)PRINTF("Message: Size=%x, DATA = %d, %d, %d, %d\r\n", xReceivedBytes, fxos_pitch, fxos_roll, fxos_yaw, light_distance);
         }
     }
 

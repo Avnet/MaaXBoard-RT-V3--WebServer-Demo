@@ -3,14 +3,13 @@
 
 <head>
 <title>MCUXpresso SDK HTTP Server Example</title>
+    <link rel="stylesheet" href="webconfig.css">
     <style type="text/css">
     <!--
     @import"httpsrv.css";
     -->
-    </style>
-
-    <script src="request.js" type="text/javascript"></script>
-
+    </style>    
+    <script src="request.js" type="text/javascript"></script>    
     <script type="text/javascript">
         function parse_vars(data)
         {
@@ -53,7 +52,8 @@
             }            
             make_post_request('led.cgi',JSON.stringify(param));
         }
-        window.onload = (event) => {         
+        window.onload = (event) => {    
+               
             make_request('led.cgi');              
         }
 

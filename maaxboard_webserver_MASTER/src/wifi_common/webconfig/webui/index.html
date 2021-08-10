@@ -5,12 +5,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="webconfig.css">
-    <script type="text/javascript">
 
-        function content_load(newUrl)
+    <script type="text/javascript" src="webconfig.js"></script>                
+    <script type="text/javascript">     
+        function highlight_menu(index) {
+            let menu_buttons = document.getElementsByClassName("menu_row")[0].childNodes;            
+            for (let i=0; i<menu_buttons.length-1; i+=2) {                
+                menu_buttons[i+1].setAttribute("class","menu_button");                
+            }               
+            if (index < menu_buttons.length/2-1){
+                menu_buttons[index*2+1].setAttribute("class","menu_button current");
+            }                            
+        }
+    
+        function content_load(newUrl, index)
         {
             var objectEl = document.getElementById('content_frame');
             objectEl.outerHTML = objectEl.outerHTML.replace(/src="(.+?)"/, 'src="' + newUrl + '"');
+            highlight_menu(index);
         }
 		function autoResize(obj){
 			var newheight;
@@ -29,7 +41,6 @@
 
 <body>
     <div id="page_main">
-
         <div id="page_header" class="header_banner">
             <div class="header_container row">
                 <div class="logo col-4">
@@ -40,25 +51,18 @@
                 </div>
             </div>
         </div>
-
         <div class="page_body">
-
             <div class="row">
                 <div class="col-4">
-                    <div class="menu_row">
-                        <button type="button" name="main_b" class="menu_button" id="scan_button" onclick="content_load('wifi.html')">Scan Wi-fi Networks</button>
-                        <br>
-                        <button type="button" name="main_b" class="menu_button" onclick="open_clear_board_dialogue()">Clear Board settings</button>
-                        <button type="button" name="main_b" class="menu_button" onclick="content_load('ledcgi.html')">Led Control</button>
-                        <button type="button" name="main_b" class="menu_button" onclick="content_load('sensorPoll.html')">Read Sensor</button>
+                    <div class="menu_row">                        
+                        <button type="button" name="main_b" id="home_btn" class="menu_button" onclick="content_load('welcome.shtml',0)">Home</button>
+                        <button type="button" name="main_b" id="wifi_btn" class="menu_button" onclick="content_load('wifi.html',1)">Wi-Fi Configuration</button>                        
+                        <button type="button" name="main_b" id="led_btn" class="menu_button" onclick="content_load('ledcgi.html',2)">Led Control</button>
+                        <button type="button" name="main_b" id="sensor_btn" class="menu_button" onclick="content_load('sensorPoll.html',3)">Read Sensor</button>
                     </div>
                 </div>
-
-                <div id="p_content" class="page_content col-8">
-                    
-                    <iframe id="content_frame" src="welcome.shtml" width="600px" style="border:none" onload="heightReset(this); autoResize(this);">&nbsp;</iframe>
-                    
-                    
+                <div id="p_content" class="page_content col-8">                    
+                    <iframe id="content_frame" src="welcome.shtml" width="600px" style="border:none" onload="heightReset(this); autoResize(this);">&nbsp;</iframe>                                        
                 </div>
             </div>
         </div>
@@ -75,14 +79,11 @@
 
 
 <!-- Scan loading banner -->
-        <div id="loader_page" class="banner_background" style="display:none;">
+        <!-- <div id="loader_page" class="banner_background" style="display:none;">
             <h2> Scanning....</h2>
             <div class="loader">
             </div>
         </div>
-
-
-
         <div id="ap_password_page" class="banner_background" style="display:none;" onclick='closeDialogue("ap_password_page");'>
             <div id="ap_password_page_dialogue" class="banner_dialogue">
                 <h2>Enter Credentials</h2>
@@ -155,9 +156,8 @@
 
             </div>
         </div>
-    </div>
+    </div> -->
 
-    <script type="text/javascript" src="webconfig.js"></script>
-
+       
 </body>
 </html>

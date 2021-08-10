@@ -1023,9 +1023,9 @@ static void wifi_task(void *arg)
 
 //    result = get_saved_wifi_credentials(CONNECTION_INFO_FILENAME, ssid, password);
 
-    /* temporary: input the ssid, password */
-    strcpy(ssid, "XXXXX");
-    strcpy(password, "XXXXX");
+    /* temporary input the ssid, password */
+    strcpy(ssid, "NETGEAR12");
+    strcpy(password, "aquaticpotato000");
     result = 0;
 
 

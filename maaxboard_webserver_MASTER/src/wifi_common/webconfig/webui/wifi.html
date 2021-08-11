@@ -4,8 +4,11 @@
 <head>
 <title>MCUXpresso SDK HTTP Server Example</title>
 <link rel="stylesheet" href="webconfig.css">
+<script type="text/javascript" src="webconfig.js"></script> 
+<script type="text/javascript">
+    checkIfFirefox();
+</script>
 </head>
-
 <body>
 
     <div class="row">
@@ -47,6 +50,14 @@
     <p>
         If connection is successful, the credentials are stored in board flash memory so that next time the board starts up, it connects directly to the configured Wi-Fi network.
     </p>
+
+
+    <div id="loader_page" class="banner_background" style="display:none;">
+        <h2> Scanning....</h2>
+        <div class="loader">
+        </div>
+    </div>
+
 </html>
 
 

@@ -2,9 +2,9 @@ var g_state = "ap";
 
 
 function checkIfFirefox(){
-  if(navigator.userAgent.toLowerCase().indexOf('firefox') > -1)
-    open_error_dialogue("Firefox is not supported by this application. Use Microsoft Edge or Google Chrome.",
-      "Browser not supported");
+//   if(navigator.userAgent.toLowerCase().indexOf('firefox') > -1)
+//     open_error_dialogue("Firefox is not supported by this application. Use Microsoft Edge or Google Chrome.",
+//       "Browser not supported");
   scan();
 }
 

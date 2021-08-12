@@ -10,7 +10,7 @@ product: Peripherals v9.0
 processor: MIMXRT1176xxxxx
 package_id: MIMXRT1176DVMAA
 mcu_data: ksdk2_0
-processor_version: 9.0.2
+processor_version: 9.0.3
 board: MIMXRT1170-EVK
 functionalGroups:
 - name: BOARD_InitPeripherals

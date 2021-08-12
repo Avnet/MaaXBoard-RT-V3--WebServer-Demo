@@ -15,7 +15,7 @@ product: Clocks v7.0
 processor: MIMXRT1176xxxxx
 package_id: MIMXRT1176DVMAA
 mcu_data: ksdk2_0
-processor_version: 9.0.2
+processor_version: 9.0.3
 board: MIMXRT1170-EVK
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 
@@ -99,13 +99,14 @@ outputs:
 - {id: EMV2_CLK_ROOT.outFreq, value: 24 MHz}
 - {id: ENET1_CLK_ROOT.outFreq, value: 24 MHz}
 - {id: ENET2_CLK_ROOT.outFreq, value: 24 MHz}
+- {id: ENET_1G_REF_CLK.outFreq, value: 24 MHz}
 - {id: ENET_1G_TX_CLK.outFreq, value: 24 MHz}
 - {id: ENET_25M_CLK_ROOT.outFreq, value: 24 MHz}
 - {id: ENET_QOS_CLK_ROOT.outFreq, value: 24 MHz}
+- {id: ENET_REF_CLK.outFreq, value: 24 MHz}
 - {id: ENET_TIMER1_CLK_ROOT.outFreq, value: 24 MHz}
 - {id: ENET_TIMER2_CLK_ROOT.outFreq, value: 24 MHz}
 - {id: ENET_TIMER3_CLK_ROOT.outFreq, value: 24 MHz}
-- {id: ENET_TX_CLK.outFreq, value: 24 MHz}
 - {id: FLEXIO1_CLK_ROOT.outFreq, value: 24 MHz}
 - {id: FLEXIO2_CLK_ROOT.outFreq, value: 24 MHz}
 - {id: FLEXSPI1_CLK_ROOT.outFreq, value: 24 MHz}
@@ -219,6 +220,7 @@ settings:
 - {id: CCM.CLOCK_ROOT1.MUX.sel, value: ANADIG_PLL.SYS_PLL3_PFD3_CLK}
 - {id: CCM.CLOCK_ROOT2.DIV.scale, value: '2'}
 - {id: CCM.CLOCK_ROOT2.MUX.sel, value: ANADIG_PLL.SYS_PLL3_CLK}
+- {id: CCM.CLOCK_ROOT20.DIV.scale, value: '1', locked: true}
 - {id: CCM.CLOCK_ROOT25.DIV.scale, value: '22'}
 - {id: CCM.CLOCK_ROOT25.MUX.sel, value: ANADIG_PLL.SYS_PLL2_CLK}
 - {id: CCM.CLOCK_ROOT26.DIV.scale, value: '22'}
@@ -834,7 +836,7 @@ void BOARD_BootClockRUN(void)
     /* Set MQS configuration. */
     IOMUXC_MQSConfig(IOMUXC_GPR,kIOMUXC_MqsPwmOverSampleRate32, 0);
     /* Set ENET Tx clock source. */
-    IOMUXC_GPR->GPR4 &= ~IOMUXC_GPR_GPR4_ENET_TX_CLK_SEL_MASK;
+    IOMUXC_GPR->GPR4 |= IOMUXC_GPR_GPR4_ENET_TX_CLK_SEL_MASK;
     /* Set ENET_1G Tx clock source. */
     IOMUXC_GPR->GPR5 &= ~IOMUXC_GPR_GPR5_ENET1G_TX_CLK_SEL_MASK;
     /* Set GPT1 High frequency reference clock source. */

@@ -1016,17 +1016,17 @@ static void wifi_task(void *arg)
      * Otherwise the stored credentials will be used to connect to the WiFi network.*/
     WC_DEBUG("[i] Trying to load data from mflash.\r\n");
 
-//    init_flash_storage(CONNECTION_INFO_FILENAME);
+    init_flash_storage(CONNECTION_INFO_FILENAME);
 
     char ssid[WPL_WIFI_SSID_LENGTH];
     char password[WPL_WIFI_PASSWORD_LENGTH];
 
-//    result = get_saved_wifi_credentials(CONNECTION_INFO_FILENAME, ssid, password);
+    result = get_saved_wifi_credentials(CONNECTION_INFO_FILENAME, ssid, password);
 
     /* temporary input the ssid, password */
-    strcpy(ssid, "SSID");
-    strcpy(password, "PASSWORD");
-    result = 0;
+//    strcpy(ssid, "NETGEAR12");
+//    strcpy(password, "aquaticpotato000");
+//    result = 0;
 
 
     if (result == 0 && strcmp(ssid, "") != 0)

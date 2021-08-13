@@ -1261,11 +1261,11 @@ int main(void)
     /* Print the initial banner */
     (void)PRINTF("\r\nFreeRTOS Message Buffers demo starts\r\n");
 
-    //xTaskCreateStatic(app_task, "APP_TASK", APP_TASK_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1U, xStack, &xTaskBuffer);
-    stat = xTaskCreate(app_task, "APP_TASK", 2048, NULL, configMAX_PRIORITIES - 4, NULL);
+    stat = xTaskCreate(wifi_task, "wifi_task", 2048, NULL, configMAX_PRIORITIES - 4, &g_BoardState.wifiTask);
     assert(pdPASS == stat);
 
-    stat = xTaskCreate(wifi_task, "wifi_task", 2048, NULL, configMAX_PRIORITIES - 4, &g_BoardState.wifiTask);
+//    xTaskCreateStatic(app_task, "APP_TASK", APP_TASK_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1U, xStack, &xTaskBuffer);
+    stat = xTaskCreate(app_task, "APP_TASK", 2048, NULL, configMAX_PRIORITIES - 4, NULL);
     assert(pdPASS == stat);
 
     vTaskStartScheduler();

@@ -26,6 +26,15 @@
 #include "cred_flash_storage.h"
 
 #include "cJSON.h"
+
+/*******************************************************************************
+ * Definitions
+ ******************************************************************************/
+#define SSID_AUTO 	1
+#if defined(SSID_AUTO) && (SSID_AUTO == 0)
+	#define SSID_DEF		"TEST"
+	#define PASSWORD_DEF	"PASSWORD"
+#endif
 /*******************************************************************************
  * Prototypes
  ******************************************************************************/
@@ -1016,18 +1025,18 @@ static void wifi_task(void *arg)
      * Otherwise the stored credentials will be used to connect to the WiFi network.*/
     WC_DEBUG("[i] Trying to load data from mflash.\r\n");
 
-    init_flash_storage(CONNECTION_INFO_FILENAME);
-
     char ssid[WPL_WIFI_SSID_LENGTH];
     char password[WPL_WIFI_PASSWORD_LENGTH];
 
+#if defined(SSID_AUTO) && (SSID_AUTO==1)
+    init_flash_storage(CONNECTION_INFO_FILENAME);
     result = get_saved_wifi_credentials(CONNECTION_INFO_FILENAME, ssid, password);
-
+#else
     /* temporary input the ssid, password */
-//    strcpy(ssid, "NETGEAR12");
-//    strcpy(password, "aquaticpotato000");
-//    result = 0;
-
+    strcpy(ssid, SSID_DEF);
+    strcpy(password, PASSWORD_DEF);
+    result = 0;
+#endif
 
     if (result == 0 && strcmp(ssid, "") != 0)
     {
@@ -1261,10 +1270,22 @@ int main(void)
     /* Print the initial banner */
     (void)PRINTF("\r\nFreeRTOS Message Buffers demo starts\r\n");
 
+/* Uncomment below if FreeRTOS memory Scheme 5 is used*/
+//    const HeapRegion_t xHeapRegions[] =
+//    {
+//        { ( uint8_t * ) 0x80000000UL, 0x10000 },
+//        { NULL, 0 } /* Terminates the array. */
+//    };
+//
+//    /* Pass the array into vPortDefineHeapRegions(). */
+//    vPortDefineHeapRegions( xHeapRegions );
+
+
+
     stat = xTaskCreate(wifi_task, "wifi_task", 2048, NULL, configMAX_PRIORITIES - 4, &g_BoardState.wifiTask);
     assert(pdPASS == stat);
 
-//    xTaskCreateStatic(app_task, "APP_TASK", APP_TASK_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1U, xStack, &xTaskBuffer);
+    /* hyperflash storage couldn't write or erase when following task is enabled. This will enable m4 core.*/
     stat = xTaskCreate(app_task, "APP_TASK", 2048, NULL, configMAX_PRIORITIES - 4, NULL);
     assert(pdPASS == stat);
 

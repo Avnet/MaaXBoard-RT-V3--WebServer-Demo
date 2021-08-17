@@ -30,10 +30,10 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-#define SSID_AUTO 	1
+#define SSID_AUTO 	0
 #if defined(SSID_AUTO) && (SSID_AUTO == 0)
-	#define SSID_DEF		"TEST"
-	#define PASSWORD_DEF	"PASSWORD"
+	#define SSID_DEF		"NETGEAR12"
+	#define PASSWORD_DEF	"aquaticpotato000"
 #endif
 /*******************************************************************************
  * Prototypes

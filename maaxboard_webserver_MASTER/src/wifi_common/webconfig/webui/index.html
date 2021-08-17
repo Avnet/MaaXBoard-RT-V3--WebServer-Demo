@@ -5,157 +5,59 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="webconfig.css">
-                   
-    <script type="text/javascript">     
-        function highlight_menu(index) {
-            let menu_buttons = document.getElementsByClassName("menu_row")[0].childNodes;            
-            for (let i=0; i<menu_buttons.length-1; i+=2) {                
-                menu_buttons[i+1].setAttribute("class","menu_button");                
-            }               
-            if (index < menu_buttons.length/2-1){
-                menu_buttons[index*2+1].setAttribute("class","menu_button current");
-            }                            
-        }
-    
-        function content_load(newUrl, index)
-        {
-            var objectEl = document.getElementById('content_frame');
-            objectEl.outerHTML = objectEl.outerHTML.replace(/src="(.+?)"/, 'src="' + newUrl + '"');
-            highlight_menu(index);
-        }
-		function autoResize(obj){
-			var newheight;
-			newheight=obj.contentWindow.document.body.scrollHeight+30;
-			if(newheight < 250) /* Control minimum height*/
-			{
-				newheight = 250;
-			}
-			obj.style.height= (newheight) + "px";
-		}
-		function heightReset(obj){
-			obj.style.height= "50%";
-		}
-    </script>
 </head>
 
 <body>
     <div id="page_main">
+
         <div id="page_header" class="header_banner">
             <div class="header_container row">
                 <div class="logo col-4">
-                    <a href="http://www.avnet.com" title="Avnet"><img src="Avnet_logo.png" alt="NXP Semiconductor" width="100%" height="auto"></a>
+                    <a href="http://www.avnet.com" title="AVNET"><img src="AVNET_logo.png" alt="Avnet" width="100%" height="auto"></a>
                 </div>
                 <div class="header_text col-8">
-					MaaxBoard RT Demo
+					Wi-Fi web configuration
                 </div>
             </div>
         </div>
+        <div id="nav_container" class="row">
+            <header class="header col-12">
+                <nav class="navbar">                            
+                    <ul class="nav-menu">
+                        <li class="nav-item">
+                            <a href="index.html" class="nav-link">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="wifi.html" class="nav-link">Wifi</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="ledcgi.html" class="nav-link">LED</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="sensorPoll.html" class="nav-link">Sensor</a>
+                        </li>
+                    </ul>
+                    <div class="hamburger">
+                        <span class="bar"></span>
+                        <span class="bar"></span>
+                        <span class="bar"></span>                
+                    </div>
+                </nav>
+            </header>
+        </div>
+        
         <div class="page_body">
             <div class="row">
-                <div class="col-4">
-                    <div class="menu_row">                        
-                        <button type="button" name="main_b" id="home_btn" class="menu_button" onclick="content_load('welcome.shtml',0)">Home</button>
-                        <button type="button" name="main_b" id="wifi_btn" class="menu_button" onclick="content_load('wifi.html',1)">Wi-Fi Configuration</button>                        
-                        <button type="button" name="main_b" id="led_btn" class="menu_button" onclick="content_load('ledcgi.html',2)">Led Control</button>
-                        <button type="button" name="main_b" id="sensor_btn" class="menu_button" onclick="content_load('sensorPoll.html',3)">Read Sensor</button>
-                    </div>
-                </div>
-                <div id="p_content" class="page_content col-8">                    
-                    <iframe id="content_frame" src="welcome.shtml" width="600px" style="border:none" onload="heightReset(this); autoResize(this);">&nbsp;</iframe>                                        
-                </div>
+               <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Commodi officia, quod, placeat amet minima porro hic similique et, dignissimos adipisci possimus nesciunt impedit. Dolor, necessitatibus aut! Numquam architecto voluptatem magni?</p>
             </div>
         </div>
 
         <div class="footer row">
-            Avnet
-        </div>
-
-
-        <!-- Banners ------------------------------------>
-        <!--*******************************************-->
-        <!--*******************************************-->
-        <!----------------------------------------------->
-
-
-        <!-- Scan loading banner -->
-        <!-- <div id="loader_page" class="banner_background" style="display:none;">
-            <h2> Scanning....</h2>
-            <div class="loader">
-            </div>
-        </div>
-        <div id="ap_password_page" class="banner_background" style="display:none;" onclick='closeDialogue("ap_password_page");'>
-            <div id="ap_password_page_dialogue" class="banner_dialogue">
-                <h2>Enter Credentials</h2>
-                <div>
-                    <label for=post_ssid>SSID:</label>
-                    <input id="post_ssid" value="SSID" type="text" name="post_ssid" readonly>
-                </div>
-                <div id="password_input_field">
-                    <label for=post_passphrase>Password:</label>
-                    <input id="post_password" value="Password" type="password" name="post_passphrase" maxlength="63">
-                    <span>
-                    <input type="checkbox" onclick="showPassword()">Show Password
-                    </span>
-                </div>
-                <span id="post_errors"></span><br>
-                 <button value="" onclick="validateForm()">Connect</button>
-            </div>
-        </div>
-
-        <div id="clear_confirm" class="banner_background" style="display:none;" onclick="closeDialogue('clear_confirm');();">
-            <div id="clear_confirm_dialogue" class="banner_dialogue">
-                <h2>Clearing settings... Are you sure?</h2>
-                <p>This will clear the saved Wi-Fi credentials from the board flash and reset the board back to AP mode. You will have to manually reconnect to the board access point.</p>
-
-                <button class="menu_button warning" type="submit" value="" onclick="clear_config()">Clear</button>
-                <button class="menu_button" type="submit" value="" onclick="closeDialogue('clear_confirm')">Cancel</button>
-
-            </div>
-        </div>
-
-
-
-        <div id="mode_switch_loader" class="banner_background" style="display:none;">
-            <div id="mode_switch_dialogue" class="banner_dialogue">
-                <h2>Attempting connection to <span id="mode_switch_network_name"></span> Network</h2>
-                <p>You will get disconnected from the current Wi-Fi Access-point while the board switches as a client to your selected network.</p>
-                 <p>Please connect your device to that network to continue.</p>
-
-                <div class="loader">
-                </div>
-
-            </div>
-        </div>
-
-
-        <div id="error_banner" class="banner_background" style="display:none;" onclick="closeDialogue('error_banner');">
-            <div id="error_banner_dialogue" class="banner_dialogue">
-                <h2 id="error_title">An Error has occurred</h2>
-                <p id="error_msg"> </p>
-
-            </div>
-        </div>
-
-        <div id="success_banner" class="banner_background" style="display:none;" onclick="closeDialogue('success_banner');">
-            <div id="success_banner_dialogue" class="banner_dialogue">
-                <h2 id="success_title">Success!</h2>
-                <p id="success_msg"> </p>
-
-            </div>
-        </div>
-
-        <div id="clientJoin_banner" class="banner_background" style="display:none;" onclick="closeDialogue('clientJoin_banner');">
-            <div id="clientJoin_banner_dialogue" class="banner_dialogue">
-                <h2>First reset back to AP mode</h2>
-                <p> You are currently in Client mode. Please, first reset the board back to AP mode and try again.</p>
-                <p>Note that this will also clear the saved SSID.</p>
-                <button type="button" name="main_b" class="menu_button warning" onclick="clear_config();">Reset to AP mode</button></li>
-                <button type="button" name="main_b" class="menu_button" onclick="closeDialogue('clientJoin_banner');">Cancel</button></li>
-
-            </div>
-        </div> -->
+            AVNET
+        </div>   
     </div>
 
-       
+    <script type="text/javascript" src="webconfig.js"></script>
+
 </body>
 </html>

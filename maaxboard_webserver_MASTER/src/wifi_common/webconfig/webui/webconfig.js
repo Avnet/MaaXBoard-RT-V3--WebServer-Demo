@@ -2,9 +2,9 @@ var g_state = "ap";
 
 
 function checkIfFirefox(){
-  if(navigator.userAgent.toLowerCase().indexOf('firefox') > -1)
-    open_error_dialogue("Firefox is not supported by this application. Use Microsoft Edge or Google Chrome.",
-      "Browser not supported");
+//   if(navigator.userAgent.toLowerCase().indexOf('firefox') > -1)
+//     open_error_dialogue("Firefox is not supported by this application. Use Microsoft Edge or Google Chrome.",
+//       "Browser not supported");
   scan();
 }
 
@@ -476,4 +476,21 @@ function clear_config(){
         }
     }
 
+}
+
+const hamburger = document.querySelector(".hamburger");
+const navMenu = document.querySelector(".nav-menu");
+const navLink = document.querySelectorAll(".nav-link");
+
+hamburger.addEventListener("click", mobileMenu);
+navLink.forEach(n => n.addEventListener("click", closeMenu));
+
+function mobileMenu() {
+    hamburger.classList.toggle("active");
+    navMenu.classList.toggle("active");
+}
+
+function closeMenu() {
+    hamburger.classList.remove("active");
+    navMenu.classList.remove("active");
 }

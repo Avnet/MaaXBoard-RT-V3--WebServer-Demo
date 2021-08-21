@@ -32,8 +32,8 @@
  ******************************************************************************/
 #define SSID_AUTO 	0
 #if defined(SSID_AUTO) && (SSID_AUTO == 0)
-	#define SSID_DEF		"NETGEAR12"
-	#define PASSWORD_DEF	"aquaticpotato000"
+	#define SSID_DEF		"SSID"
+	#define PASSWORD_DEF	"password"
 #endif
 /*******************************************************************************
  * Prototypes

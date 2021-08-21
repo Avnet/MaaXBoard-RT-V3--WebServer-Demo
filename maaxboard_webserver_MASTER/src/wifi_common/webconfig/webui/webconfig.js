@@ -459,9 +459,6 @@ function clear_config(){
     http.onload = function() {
         clearTimeout(connectionTimeout);
         console.log(http.responseText)
-
-
-
         try{
             var data = JSON.parse(http.responseText);
             if(data.status == "success"){

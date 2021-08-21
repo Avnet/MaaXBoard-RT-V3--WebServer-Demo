@@ -570,8 +570,8 @@ static void read_lightranger(void *param)
 	{
 		retry = 0;
 		while ( lightranger8_new_data_ready( &lightranger8 ) != 0 ) {
-			vTaskDelay(1/portTICK_PERIOD_MS);
-			retry++;
+			vTaskDelay(10/portTICK_PERIOD_MS);
+			retry = retry + 10;
 			if (retry>2000)
 			{
 				vTaskSuspend(NULL);
@@ -581,7 +581,7 @@ static void read_lightranger(void *param)
 		light_distance = lightranger8_get_distance( &lightranger8 );
 //		PRINTF(" ----------------------\r\n");
 //		PRINTF(" Distance: %.1f cm \r\n", ( float )distance / 10 );
-		vTaskDelay(2000/portTICK_PERIOD_MS);
+		vTaskDelay(500/portTICK_PERIOD_MS);
 	}
 	vTaskSuspend(NULL);
 }

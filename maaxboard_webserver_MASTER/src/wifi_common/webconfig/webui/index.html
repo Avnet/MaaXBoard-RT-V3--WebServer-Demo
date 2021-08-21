@@ -1,22 +1,22 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Wi-Fi web configuration</title>
+<head>    
+    <title>Wi-Fi web configuration</title>   
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="webconfig.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <link rel="stylesheet" href="webconfig.css">    
 </head>
 
 <body>
     <div id="page_main">
-
         <div id="page_header" class="header_banner">
             <div class="header_container row">
                 <div class="logo col-4">
-                    <a href="http://www.avnet.com" title="AVNET"><img src="AVNET_logo.png" alt="Avnet" width="100%" height="auto"></a>
+                    <a href="http://www.avnet.com" title="AVNET"><img src="AVNET_logo.png" alt="Avnet" width="100%"
+                            height="auto"></a>
                 </div>
                 <div class="header_text col-8">
-					Wi-Fi web configuration
+                    Wi-Fi Web Demo
                 </div>
             </div>
         </div>
@@ -25,16 +25,16 @@
                 <nav class="navbar">                            
                     <ul class="nav-menu">
                         <li class="nav-item">
-                            <a href="index.html" class="nav-link">Home</a>
+                            <a href="index.html" class="current nav-link">HOME</a>
                         </li>
                         <li class="nav-item">
-                            <a href="wifi.html" class="nav-link">Wifi</a>
+                            <a href="wifi.html" class="nav-link">WIFI</a>
                         </li>
                         <li class="nav-item">
                             <a href="ledcgi.html" class="nav-link">LED</a>
                         </li>
                         <li class="nav-item">
-                            <a href="sensorPoll.html" class="nav-link">Sensor</a>
+                            <a href="sensorPoll.html" class="nav-link">SENSOR</a>
                         </li>
                     </ul>
                     <div class="hamburger">
@@ -48,7 +48,12 @@
         
         <div class="page_body">
             <div class="row">
-               <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Commodi officia, quod, placeat amet minima porro hic similique et, dignissimos adipisci possimus nesciunt impedit. Dolor, necessitatibus aut! Numquam architecto voluptatem magni?</p>
+                <div class="col-6">                    
+                    <p>This demo features dual-core application on i.MXRT1176 based MaaXBoard. Faster 1GHz M7 core used for running webserver, slower 400 Mhz M4 core used for polling FXOS IMU, LightRanger sensors from MikroElectronika.</p>                    
+                </div>
+                <div class="col-6">                    
+                    <img src="maaxboard.jpg" alt="Maaxboard" width="100%" height="auto">                                        
+                </div>                
             </div>
         </div>
 

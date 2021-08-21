@@ -7,16 +7,15 @@
     <link rel="stylesheet" href="webconfig.css">
 </head>
 
-<body onload="checkIfFirefox();">
+<body onload="checkIfFirefox();">    
     <div id="page_main">
-
         <div id="page_header" class="header_banner">
             <div class="header_container row">
                 <div class="logo col-4">
                     <a href="http://www.avnet.com" title="AVNET"><img src="AVNET_logo.png" alt="Avnet" width="100%" height="auto"></a>
                 </div>
                 <div class="header_text col-8">
-					Wi-Fi web configuration
+					Wi-Fi Web Demo
                 </div>
             </div>
         </div>
@@ -25,16 +24,16 @@
                 <nav class="navbar">                            
                     <ul class="nav-menu">
                         <li class="nav-item">
-                            <a href="index.html" class="nav-link">Home</a>
+                            <a href="index.html" class="nav-link">HOME</a>
                         </li>
                         <li class="nav-item">
-                            <a href="wifi.html" class="nav-link">Wifi</a>
+                            <a href="wifi.html" class="current nav-link">WIFI</a>
                         </li>
                         <li class="nav-item">
                             <a href="ledcgi.html" class="nav-link">LED</a>
                         </li>
                         <li class="nav-item">
-                            <a href="sensorPoll.html" class="nav-link">Sensor</a>
+                            <a href="sensorPoll.html" class="nav-link">SENSOR</a>
                         </li>
                     </ul>
                     <div class="hamburger">
@@ -54,9 +53,9 @@
                             <span id="boardName">Board</span><br>
                             <span id="boardIP">IP</span><br>
                         </div>
-                        <div id="board_status">
-                            <div>
-                         Current Wi-Fi Mode:
+                        <div id="board_status">                            
+                            <div>                                
+                                <span id="boardName">Wi-Fi Mode: </span>                                   
                             </div>
                             <div class="statusIndicator" id="statusAP">AP</div>
                             <div class="statusIndicator" id="statusCLI">Client</div>

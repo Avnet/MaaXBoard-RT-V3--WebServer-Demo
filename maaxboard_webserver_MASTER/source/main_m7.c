@@ -30,7 +30,7 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-#define SSID_AUTO 	0
+#define SSID_AUTO 	1
 #if defined(SSID_AUTO) && (SSID_AUTO == 0)
 	#define SSID_DEF		"SSID"
 	#define PASSWORD_DEF	"password"
@@ -1286,8 +1286,8 @@ int main(void)
     assert(pdPASS == stat);
 
     /* hyperflash storage couldn't write or erase when following task is enabled. This will enable m4 core.*/
-    stat = xTaskCreate(app_task, "APP_TASK", 2048, NULL, configMAX_PRIORITIES - 4, NULL);
-    assert(pdPASS == stat);
+//    stat = xTaskCreate(app_task, "APP_TASK", 2048, NULL, configMAX_PRIORITIES - 4, NULL);
+//    assert(pdPASS == stat);
 
     vTaskStartScheduler();
 

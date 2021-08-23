@@ -271,7 +271,8 @@ static int32_t mflash_drv_init_internal(void)
     /* disable interrupts when running from XIP */
     uint32_t primask = __get_PRIMASK();
     __asm("cpsid i");
-
+    __DSB();
+    __ISB();
     /* Wait for bus to be idle before changing flash configuration. */
     while (false == FLEXSPI_GetBusIdleStatus(MFLASH_FLEXSPI))
     {
@@ -331,7 +332,8 @@ static int32_t mflash_drv_sector_erase_internal(uint32_t sector_addr)
     uint32_t primask = __get_PRIMASK();
 
     __asm("cpsid i");
-
+    __DSB();
+    __ISB();
     status_t status;
     status = flexspi_nor_flash_sector_erase(MFLASH_FLEXSPI, sector_addr);
 
@@ -368,7 +370,8 @@ static int32_t mflash_drv_page_program_internal(uint32_t page_addr, uint32_t *da
 {
     uint32_t primask = __get_PRIMASK();
     __asm("cpsid i");
-
+    __DSB();
+    __ISB();
     /* Wait for bus to be idle before changing flash configuration. */
     while (false == FLEXSPI_GetBusIdleStatus(MFLASH_FLEXSPI))
     {

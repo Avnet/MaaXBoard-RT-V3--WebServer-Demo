@@ -33,7 +33,7 @@
 #define SSID_AUTO 	0
 #if defined(SSID_AUTO) && (SSID_AUTO == 0)
 	#define SSID_DEF		"SSID"
-	#define PASSWORD_DEF	"PASSWORD"
+	#define PASSWORD_DEF	"password"
 #endif
 /*******************************************************************************
  * Prototypes
@@ -918,12 +918,6 @@ typedef struct sensor_t {
 	int16_t distance;
 } sensor_t;
 
-//union Sensor_data {
-//	imu_t fxos;
-//	lightranger_t light_distance;
-//};
-
-
 static void app_task(void *param)
 {
 	sensor_t * sensor_ptr;
@@ -971,21 +965,11 @@ static void app_task(void *param)
 
     (void)MCMGR_RegisterEvent(kMCMGR_FreeRtosMessageBuffersEvent, FreeRtosMessageBuffersEventHandler, ((void *)0));
 
-//    while (msg.DATA <= 100U)
-//    {
-//        xReceivedBytes =
-//            xMessageBufferReceive(xSecondaryToPrimaryMessageBuffer, (void *)&msg, sizeof(THE_MESSAGE), portMAX_DELAY);
-//
-//        (void)PRINTF("Primary core received a msg\r\n");
-//        (void)PRINTF("Message: Size=%x, DATA = %i\r\n", xReceivedBytes, msg.DATA);
-//    }
-
     while (1)
     {
         xReceivedBytes =
             xMessageBufferReceive(xSecondaryToPrimaryMessageBuffer, (void *)&sensor_data[0], APP_MESSAGE_BUFFER_SIZE, portMAX_DELAY);
 
-//        (void)PRINTF("Primary core received a msg\r\n");
         if (sensor_data[0] == 0x01)
         {
         	// imu sensor
@@ -1001,7 +985,7 @@ static void app_task(void *param)
     vMessageBufferDelete(xPrimaryToSecondaryMessageBuffer);
     vTaskDelay(50);
     /* Print the ending banner */
-    (void)PRINTF("\r\nFreeRTOS Message Buffers demo ends\r\n");
+    (void)PRINTF("\r\nFreeRTOS communication task ends here.\r\n");
     for (;;)
     {
     }
@@ -1016,7 +1000,7 @@ static void wifi_task(void *arg)
 
     PRINTF(
         "\r\n"
-        "Starting webconfig DEMO\r\n");
+        "Starting MaaXBoard Webserver DEMO\r\n");
 
     /* When the App starts up, it will first read the mflash to check if any
      * credentials have been saved from previous runs.
@@ -1255,8 +1239,6 @@ int main(void)
     BOARD_InitDebugConsole();
 #if defined(WIFI_BOARD_AW_CM358)
     /* Set SDIO_RST to 1 */
-    //GPIO_PinWrite(GPIO9, 13U, 1U);
-
     gpio_pin_config_t gpio_config = {kGPIO_DigitalOutput, 0, kGPIO_NoIntmode};
 
     GPIO_PinInit(GPIO9, 13, &gpio_config);
@@ -1267,8 +1249,6 @@ int main(void)
     GPIO_WritePinOutput(GPIO9, 13, 1);
     SDK_DelayAtLeastUs(30000, CLOCK_GetFreq(kCLOCK_CpuClk));
 #endif
-    /* Print the initial banner */
-    (void)PRINTF("\r\nFreeRTOS Message Buffers demo starts\r\n");
 
 /* Uncomment below if FreeRTOS memory Scheme 5 is used*/
 //    const HeapRegion_t xHeapRegions[] =

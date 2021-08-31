@@ -1,15 +1,23 @@
 # MaaXBoard-RT-Webserver Demo
 
-This program utilizes m7, m4 cores to demonstrate headless webserver on the i.mxrt1170 MCU.
-Application program is partitioned in following way:
-- webserver. (m7)
-    1. LWIP stack based httpserver serving wifi, led, sensor pages.
-    2. wifi softAP or client
-    3. Hyperflash as configuration storage    
-- sensor acquisition using i2c. (m4)
-    1. [6DOF IMU 3 CLICK](https://www.mikroe.com/6dof-imu-3-click)
-    2. [LightRanger 8 CLICK](https://www.mikroe.com/lightranger-8-click)
-    
+This program utilizes m7, m4 cores to demonstrate headless webserver on the i.mxrt1170 MCU. There are multiple features:
+- Hyperflash as configuration storage
+- wifi softAP or wifi client
+- httpserver based on lwip stack
+- use of m7, m4 cores. intercore communication
+- IMU, distance sensor reading using i2c bus.
+
+Application program is partitioned in the two projects:
+M7 core project runs Freertos with memory scheme 3. It has 3 running tasks: 
+1. wifi_task: for initialize wifi connectivity.
+2. http_srv_task:  httpserver based on lwip stack.
+3. app_task: for communicating with m4 core, to retrieve sensor values.
+   
+M4 core project runs Freertos with memory scheme 4. It has 3 running tasks:
+1. IMU_TASK: for polling imu sensor every 10ms;
+2. LR_TASK: for polling lightranger sensor every 500ms;
+3. MC_TASK: sending sensor values to M7 core every 200ms through shared memory.
+
 **Table of Contents**
 
 1. [Required Hardwares](#Required-Hardwares)
@@ -46,7 +54,8 @@ Application program is partitioned in following way:
 
 # Mode of Operation
 ## softAP mode
-MaaXBoard will run in softAP mode if there is no ssid, password is stored on the hyperflash. Hyperflash has size of 32MB. Currently first 16MB is used for program flash, later 16MB is for storage.
+MaaXBoard will run in softAP mode if there is no ssid, password is stored on the hyperflash. Hyperflash has size of 32MB. Currently first 16MB is used for program flash, later 16MB is for storage. <br/>
+(*Note: of course this flash partitioning can be changed in the project settings.*)
 
 Following definition must be set in the project. This is the physical address where configuration is stored. (16777216 = 0x1000000)
 ```
@@ -56,25 +65,26 @@ MFLASH_FILE_BASEADDR=16777216
 <br/>
 Once softAP is started, user may connect to following wifi: 
 <br/>
-ssid: **"maaxboard_access_point"** password: **"maaxboard123"**
+ssid: "maaxboard_access_point" password: "maaxboard123"
 <br/>
 on a browser, connect to 192.168.1.1
 
 ## Wifi Client Mode
 In this mode, maaxboard will connect to pre-stored ssid, password on the hyperflash. User can see the actual assigned IP on the serial console.
+(Note: Serial terminal uses 115200/8-N-1 configuration)
 
 ```
 Starting MaaXBoard Webserver DEMO
 [i] Trying to load data from mflash.
 [i] Saved SSID: SSID, Password: password
 [i] Initializing WiFi connection...
-MAC Address: D4:53:83:C0:A3:FE
+MAC Address: XX:XX:XX:XX:XX:XX
 [net] Initialized TCP/IP networking stack
 WLAN initialized
 WLAN FW Version: w8987o-V0, RF878X, FP91, 16.91.10.p200, WPA2_CVE_FIX 1, PVE_FIX 1
 [i] Successfully initialized WiFi module
 Connecting as client to ssid: NETGEAR12 with password aquaticpotato000
-        Connected to following BSS:SSID = [NETGEAR12], IP = [192.168.0.25]
+        Connected to following BSS:SSID = [SSID], IP = [192.168.0.25]
 [i] Connected to Wi-Fi
 ssid: SSID
 [!]passphrase: password
@@ -112,6 +122,8 @@ Following folder structures are useful for user.
 	* wifi driver, bluetooth firmware
 
 # Demo
+**Note**: Lightranger click sensor must installed on slot#1 on click shield, imu click sensor on slot#2 due to physical pin routing.
+<br/>
 <img src="./images/maaxboard.jpg" alt="maaxboard" width="300"/>
 <img src="./images/led.PNG" alt="led_page" width="300"/>
 <img src="./images/wifi.PNG" alt="wifi_page" width="300"/>

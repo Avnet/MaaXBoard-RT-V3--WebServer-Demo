@@ -30,11 +30,7 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-#define SSID_AUTO 	1
-#if defined(SSID_AUTO) && (SSID_AUTO == 0)
-	#define SSID_DEF		"SSID"
-	#define PASSWORD_DEF	"password"
-#endif
+
 /*******************************************************************************
  * Prototypes
  ******************************************************************************/
@@ -1251,15 +1247,18 @@ int main(void)
     SDK_DelayAtLeastUs(30000, CLOCK_GetFreq(kCLOCK_CpuClk));
 #endif
 
-/* Uncomment below if FreeRTOS memory Scheme 5 is used*/
-//    const HeapRegion_t xHeapRegions[] =
-//    {
-//        { ( uint8_t * ) 0x80000000UL, 0x10000 },
-//        { NULL, 0 } /* Terminates the array. */
-//    };
-//
-//    /* Pass the array into vPortDefineHeapRegions(). */
-//    vPortDefineHeapRegions( xHeapRegions );
+
+#ifdef FRTOS_MEM_5
+    /* Uncomment below if FreeRTOS memory Scheme 5 is used*/
+        const HeapRegion_t xHeapRegions[] =
+        {
+            { ( uint8_t * ) 0x80000000UL, 0x10000 },
+            { NULL, 0 } /* Terminates the array. */
+        };
+
+        /* Pass the array into vPortDefineHeapRegions(). */
+        vPortDefineHeapRegions( xHeapRegions );
+#endif
 
     /* hyperflash storage couldn't write or erase when following task is enabled. This will enable m4 core.*/
     stat = xTaskCreate(app_task, "APP_TASK", 2048, NULL, configMAX_PRIORITIES - 4, NULL);

@@ -640,12 +640,10 @@ int main(void)
     (void)MCMGR_Init();
 
     BOARD_Click_I2C_Init(&rtosHandle_i2c_sensor);
-    //xTaskCreateStatic(app_task, "APP_TASK", APP_TASK_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1U, xStack, &xTaskBuffer);
 
     xTaskCreate(read_imu, "IMU_TASK", configMINIMAL_STACK_SIZE + 200, NULL, 3, NULL);
     xTaskCreate(read_lightranger, "LR_TASK", configMINIMAL_STACK_SIZE + 200, NULL, 3, NULL);
     xTaskCreate(transfer_sensor_data, "MC_TASK", configMINIMAL_STACK_SIZE + 200, NULL, 3, &xTaskBuffer);
-
 
     vTaskStartScheduler();
 

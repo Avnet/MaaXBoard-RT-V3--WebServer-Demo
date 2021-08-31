@@ -4,6 +4,18 @@
  * Definitions
  ******************************************************************************/
 
+/* @Brief
+ * SSID_AUTO=1 -> connect to ssid stored in the hyperflash, or start softAP
+ * SSID_AUTO=0 -> connect to hardcoded ssid, password
+ *  */
+#define SSID_AUTO 	1
+
+/* Hardcoded ssid, password */
+#if defined(SSID_AUTO) && (SSID_AUTO == 0)
+	#define SSID_DEF		"SSID"
+	#define PASSWORD_DEF	"password"
+#endif
+
 /* Common WiFi parameters */
 #ifndef WIFI_SSID
 #define WIFI_SSID "maaxboard_access_point"

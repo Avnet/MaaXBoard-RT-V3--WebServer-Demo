@@ -32,8 +32,8 @@
  ******************************************************************************/
 #define SSID_AUTO 	1
 #if defined(SSID_AUTO) && (SSID_AUTO == 0)
-	#define SSID_DEF		"SBG6700AC-91AFA-5G"
-	#define PASSWORD_DEF	"12345qwert"
+	#define SSID_DEF		"SSID"
+	#define PASSWORD_DEF	"password"
 #endif
 /*******************************************************************************
  * Prototypes

@@ -30,10 +30,10 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-#define SSID_AUTO 	0
+#define SSID_AUTO 	1
 #if defined(SSID_AUTO) && (SSID_AUTO == 0)
-	#define SSID_DEF		"SSID"
-	#define PASSWORD_DEF	"password"
+	#define SSID_DEF		"SBG6700AC-91AFA-5G"
+	#define PASSWORD_DEF	"12345qwert"
 #endif
 /*******************************************************************************
  * Prototypes
@@ -1089,6 +1089,7 @@ static void wifi_task(void *arg)
                 vTaskSuspend(NULL);
                 CleanUpAP();
         }
+        vTaskDelay(5);
     }
 }
 
@@ -1260,13 +1261,11 @@ int main(void)
 //    /* Pass the array into vPortDefineHeapRegions(). */
 //    vPortDefineHeapRegions( xHeapRegions );
 
-
-
-    stat = xTaskCreate(wifi_task, "wifi_task", 2048, NULL, configMAX_PRIORITIES - 4, &g_BoardState.wifiTask);
-    assert(pdPASS == stat);
-
     /* hyperflash storage couldn't write or erase when following task is enabled. This will enable m4 core.*/
     stat = xTaskCreate(app_task, "APP_TASK", 2048, NULL, configMAX_PRIORITIES - 4, NULL);
+    assert(pdPASS == stat);
+
+    stat = xTaskCreate(wifi_task, "wifi_task", 2048, NULL, configMAX_PRIORITIES - 4, &g_BoardState.wifiTask);
     assert(pdPASS == stat);
 
     vTaskStartScheduler();

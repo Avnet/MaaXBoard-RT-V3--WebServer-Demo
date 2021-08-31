@@ -66,7 +66,7 @@ In this mode, maaxboard will connect to pre-stored ssid, password on the hyperfl
 ```
 Starting MaaXBoard Webserver DEMO
 [i] Trying to load data from mflash.
-[i] Saved SSID: NETGEAR12, Password: aquaticpotato000
+[i] Saved SSID: SSID, Password: password
 [i] Initializing WiFi connection...
 MAC Address: D4:53:83:C0:A3:FE
 [net] Initialized TCP/IP networking stack
@@ -112,9 +112,10 @@ Following folder structures are useful for user.
 	* wifi driver, bluetooth firmware
 
 # Demo
-<img src="./images/led.PNG" alt="welcome_page" width="300"/>
-<img src="./images/wifi.PNG" alt="welcome_page" width="300"/>
-<img src="./images/sensor.PNG" alt="welcome_page" width="300"/>
+<img src="./images/maaxboard.jpg" alt="maaxboard" width="300"/>
+<img src="./images/led.PNG" alt="led_page" width="300"/>
+<img src="./images/wifi.PNG" alt="wifi_page" width="300"/>
+<img src="./images/sensor.PNG" alt="sensor_page" width="300"/>
 
 # Customization
 ## Frontend

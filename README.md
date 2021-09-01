@@ -28,8 +28,9 @@ M4 core project runs Freertos with memory scheme 4. It has 3 running tasks:
     1. [SoftAP mode](#softap-mode)
     2. [Wifi client mode](#gui-mode)    
 3. [Project structure](#project-structure)
-4. [Using Hyperflash as storage](#hyperflash-as-storage)
-5. [Customization](#customization)
+4. [Demo](#demo)
+5. [Using Hyperflash as storage](#hyperflash-as-storage)
+6. [Customization](#customization)
     1. [Frontend](#frontend)
     2. [Backend]($backend)
 
@@ -129,6 +130,27 @@ Following folder structures are useful for user.
 <img src="./images/led.PNG" alt="led_page" width="300"/>
 <img src="./images/wifi.PNG" alt="wifi_page" width="300"/>
 <img src="./images/sensor.PNG" alt="sensor_page" width="300"/>
+
+Running the demo
+================
+The log below shows the output of the maaxboard_webserver_MASTER demo in the terminal window:
+```
+Starting MaaXBoard Webserver DEMO
+[i] Trying to load data from mflash.
+[i] Saved SSID: ssid, Password: password
+[i] Initializing WiFi connection...
+MAC Address: XX:XX:XX:XX:XX:XX
+[net] Initialized TCP/IP networking stack
+WLAN initialized
+WLAN FW Version: w8987o-V0, RF878X, FP91, 16.91.10.p200, WPA2_CVE_FIX 1, PVE_FIX 1
+[i] Successfully initialized WiFi module
+Connecting as client to ssid: ssid with password password
+        Connected to following BSS:SSID = [ssid], IP = [192.168.0.13]
+[i] Connected to Wi-Fi
+ssid: ssid
+[!]passphrase: password
+ Now join that network on your device and connect to this IP: 192.168.0.13
+```
 
 # Hyperflash as storage
 SDK 2.10 provides software component "mflash rt1170" which is based on the NOR flash memory. MaaXBoard uses 32MB Hyperflash. Proper change has been made on the mflash driver code. 

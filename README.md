@@ -20,15 +20,16 @@ M4 core project runs Freertos with memory scheme 4. It has 3 running tasks:
 
 **Table of Contents**
 
-1. [Required Hardwares](#Required-Hardwares)
-	1. [MaaXBoard RT board](#Maaxboard-RT-board)
+1. [Required Hardwares](#required-hardwares)
+	1. [MaaXBoard RT board](#maaxboard-rt-board)
     2. [MCU-Link debug probe](#mcu-link-debug-probe)
 
 2. [Mode of Operation](#mode-of-operation)
-    1. [SoftAP mode](#console-mode)
+    1. [SoftAP mode](#softap-mode)
     2. [Wifi client mode](#gui-mode)    
 3. [Project structure](#project-structure)
-4. [Customization](#customization)
+4. [Using Hyperflash as storage](#hyperflash-as-storage)
+5. [Customization](#customization)
     1. [Frontend](#frontend)
     2. [Backend]($backend)
 
@@ -83,7 +84,7 @@ MAC Address: XX:XX:XX:XX:XX:XX
 WLAN initialized
 WLAN FW Version: w8987o-V0, RF878X, FP91, 16.91.10.p200, WPA2_CVE_FIX 1, PVE_FIX 1
 [i] Successfully initialized WiFi module
-Connecting as client to ssid: NETGEAR12 with password aquaticpotato000
+Connecting as client to ssid: ssid with password password
         Connected to following BSS:SSID = [SSID], IP = [192.168.0.25]
 [i] Connected to Wi-Fi
 ssid: SSID
@@ -129,6 +130,28 @@ Following folder structures are useful for user.
 <img src="./images/wifi.PNG" alt="wifi_page" width="300"/>
 <img src="./images/sensor.PNG" alt="sensor_page" width="300"/>
 
+# Hyperflash as storage
+SDK 2.10 provides software component "mflash rt1170" which is based on the NOR flash memory. MaaXBoard uses 32MB Hyperflash. Proper change has been made on the mflash driver code. 
+- `flash/`
+    - `mimxtr1170/`
+        - `mflash_drv.c` (modified)
+        - `mflash_drv.c` (modified)
+    - `mflash_common.h`
+    - `mflash_file.c`
+    - `mflash_file.h`
+
+`mflash_file` is a simple statically allocated flat filesystem for FLASH memories.
+*Note*: When using hyperflash as storage in multi core project. User must disable flexspi1 clock configuration in the clock_config.c of slave project(in our case m4 slave). 
+
+It can be achieved using `FLEXSPI_IN_USE ` definition in the slave project.
+
+```
+#if !(defined(XIP_EXTERNAL_FLASH) && (XIP_EXTERNAL_FLASH == 1) || defined(FLEXSPI_IN_USE))
+    rootCfg.mux = kCLOCK_FLEXSPI1_ClockRoot_MuxOscRc48MDiv2;
+    rootCfg.div = 1;
+    CLOCK_SetRootClock(kCLOCK_Root_Flexspi1, &rootCfg);
+#endif
+```
 # Customization
 ## Frontend
 At the front-end, all the sources are stored inside `src/wifi_common/webconfig/webui`. LWIP stack provides perl script which converts whole web frontend sources into compilable single `.c` file. It is located at the `src/wifi_common/webconfig/webui/mkfs.pl`.
@@ -177,5 +200,8 @@ static int CGI_Example(HTTPSRV_CGI_REQ_STRUCT *param)
 }
 ```
 # Reference
+
+* [DualCore Application](https://www.nxp.com/docs/en/application-note/AN13264.pdf)
+* [RTOS Message Buffers](https://www.freertos.org/RTOS-message-buffer-example.html#macros)
 
 * [MaaXBoard-rt](https://www.avnet.com/wps/portal/us/products/avnet-boards/avnet-board-families/maaxboard/maaxboard-rt/)
